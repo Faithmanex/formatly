@@ -1,8 +1,18 @@
-# 1. Never use fallbacks of any kind or Example codes.
-# 2. I am using Windows Operating System.
-# 3. Don't make anything complicated. Use the shortest possible code that follows standards.
-# 4. When working with classification or identification with AI, never use hardcoded logic or values.
-# 5. Never do what you're not asked to do.
+"""
+Formatly CLI Application
+------------------------
+This module serves as the Command Line Interface (CLI) entry point for Formatly.
+It utilizes the core logic located in the root `core/` directory to perform document
+formatting, spell checking, and structure analysis.
+
+Usage:
+    python app.py [input_file] [options]
+
+Key Dependencies:
+    - core.formatter: Shared formatting logic
+    - style_guides: Citation style definitions
+    - utils: Helper utilities for rate limiting and analysis
+"""
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING

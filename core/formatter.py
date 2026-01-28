@@ -1,3 +1,17 @@
+"""
+Formatly Core Formatter
+-----------------------
+This module contains the primary logic for document analysis and formatting.
+It is the shared engine used by the CLI and API.
+
+Classes:
+    - DocumentStructureManager: Handles AI prompt generation and JSON response parsing
+      to determine the logical structure of the document (headings, lists, body text).
+    - AdvancedFormatter: The main class that orchestrates the formatting process.
+      It applies styles, manages margins, formats references, and handles specific
+      citation style rules (APA, MLA, etc.).
+"""
+
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml.shared import OxmlElement
@@ -18,7 +32,13 @@ from datetime import datetime
 from pathlib import Path
 
 class DocumentStructureManager:
-    """Manages document structure initialization, validation, and prompt creation."""
+    """
+    Manages document structure initialization, validation, and prompt creation.
+
+    This class is responsible for creating the detailed system prompts used to
+    instruct the AI model on how to categorize document paragraphs into specific
+    block types (e.g., 'heading_1', 'body', 'list_item_bullet').
+    """
     
     @staticmethod
     def get_default_structure() -> dict:

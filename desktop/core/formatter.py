@@ -1,3 +1,15 @@
+"""
+Formatly Desktop Core Formatter
+-------------------------------
+This module contains the core formatting logic specifically for the Desktop application.
+
+MAINTENANCE WARNING:
+    This file is currently a duplicate of the root `core/formatter.py`.
+    It exists here to keep the desktop application self-contained.
+    Any changes made to the logic here should likely be mirrored in the root `core/`
+    and vice-versa, until a shared library structure is fully implemented.
+"""
+
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml.shared import OxmlElement
