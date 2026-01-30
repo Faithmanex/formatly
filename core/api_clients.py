@@ -1,3 +1,17 @@
+"""
+AI Client Wrappers
+------------------
+This module provides a unified interface for interacting with different AI providers
+(Google Gemini, Hugging Face, Groq). It abstracts away the specific API details,
+handling authentication, rate limiting, and response parsing.
+
+Classes:
+    - AIClient: Abstract base class defining the interface.
+    - HuggingFaceClient: Implementation for Hugging Face Inference API (via OpenAI SDK compatibility).
+    - GeminiClient: Implementation for Google's Gemini API.
+    - GroqClient: Implementation for Groq API (specifically for chat features).
+"""
+
 from abc import ABC, abstractmethod
 import os
 import json
@@ -7,13 +21,25 @@ import google.generativeai as genai
 from utils.rate_limit_manager import RateLimitManager
 
 class AIClient(ABC):
-    """Abstract base class for AI clients."""
+    """
+    Abstract base class for AI clients.
+
+    All specific AI provider implementations must inherit from this class and
+    implement the `detect_structure` method and `model_name` property.
+    """
     
     @abstractmethod
     def detect_structure(self, system_prompt: str, user_prompt: str) -> str:
         """
         Sends prompts to the AI model and returns the response text.
         Implementations should handle streaming if desired, but must return full text.
+
+        Args:
+            system_prompt (str): The system-level instruction (context, role).
+            user_prompt (str): The user's input (document content).
+
+        Returns:
+            str: The raw text response from the AI.
         """
         pass
     
@@ -23,6 +49,10 @@ class AIClient(ABC):
         pass
 
 class HuggingFaceClient(AIClient):
+    """
+    Client for interacting with Hugging Face's API.
+    Uses the OpenAI SDK as a wrapper for the HF inference endpoints.
+    """
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("HF_API_KEY")
         if not self.api_key:

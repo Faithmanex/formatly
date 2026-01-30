@@ -1,9 +1,24 @@
+"""
+Track Changes Utility
+---------------------
+Uses Microsoft Word (via COM automation/pywin32) to generate a "Track Changes"
+comparison between the original input document and the formatted output.
+
+Requirements:
+    - Windows OS
+    - Microsoft Word installed
+    - `pywin32` library
+"""
+
 import win32com.client
 import os
 from pathlib import Path
 import time
 
 class TrackChanges:
+    """
+    Automates Word to compare two documents and save the result with tracked changes.
+    """
     def __init__(self, input_file: Path, output_file: Path):
         self.input_file = input_file
         self.output_file = output_file

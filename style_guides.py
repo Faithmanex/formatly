@@ -1,3 +1,25 @@
+"""
+Style Guides Configuration
+--------------------------
+This module defines the formatting rules for supported citation styles (APA, MLA, Chicago, Harvard).
+It uses a dictionary structure to map abstract style concepts (e.g., 'Title', 'Heading 1')
+to specific `python-docx` properties (font size, indentation, spacing).
+
+Structure:
+    STYLE_GUIDES = {
+        "style_name": {
+            "meta": { ... },       # Document-level settings (margins, page numbers)
+            "styles": {            # Paragraph-level settings
+                "Style Name": {
+                    "font": { ... },
+                    "paragraph": { ... }
+                },
+                ...
+            }
+        }
+    }
+"""
+
 from docx.shared import Pt, RGBColor, Inches
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING, WD_UNDERLINE

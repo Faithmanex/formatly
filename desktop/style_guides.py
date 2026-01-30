@@ -1,3 +1,14 @@
+"""
+Desktop Style Guides Configuration
+----------------------------------
+This module defines the formatting rules for the Desktop application.
+
+MAINTENANCE WARNING:
+    This file is currently a duplicate of the root `style_guides.py`.
+    It exists here to keep the desktop application self-contained.
+    Any changes made here must be mirrored in the root `style_guides.py`.
+"""
+
 from docx.shared import Pt, RGBColor, Inches
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING, WD_UNDERLINE

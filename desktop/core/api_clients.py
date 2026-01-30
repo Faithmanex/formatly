@@ -1,3 +1,15 @@
+"""
+Desktop AI Client Wrappers
+--------------------------
+This module provides the AI client implementations for the Desktop application.
+
+MAINTENANCE WARNING:
+    This file is currently a duplicate of the root `core/api_clients.py`.
+    It exists here to keep the desktop application self-contained.
+    Any changes made to the logic here should likely be mirrored in the root `core/`
+    and vice-versa.
+"""
+
 from abc import ABC, abstractmethod
 import os
 import json

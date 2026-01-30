@@ -1,3 +1,18 @@
+"""
+Formatly API Server
+-------------------
+This module implements the FastAPI backend for the Formatly service.
+It exposes endpoints for document upload, processing status, and retrieval.
+
+Architecture:
+    - Imports core logic from the root `core/` directory by modifying `sys.path`.
+    - Uses Supabase for storage and database management.
+    - orchestrates AI processing tasks (formatting, structure detection).
+
+Note:
+    This API shares the `core/` library with the CLI `app.py`.
+"""
+
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
