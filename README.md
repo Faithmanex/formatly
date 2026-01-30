@@ -1,4 +1,5 @@
-# Formatly V6 🎓
+# This readme is not updated
+# Formatly 🎓
 
 An AI-powered academic document formatter that automatically applies proper citation styles (APA, MLA, Chicago) to Word documents using Google's Gemini AI.
 
