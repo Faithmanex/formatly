@@ -10,12 +10,11 @@ import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 from spell_check import DocumentChecker, SpellError, GrammarError, format_error_report
-from utils.gemini_corrector import GeminiCorrector
 
 # Load environment variables for AI grammar correction
 load_dotenv()
 AI_API_KEY = os.getenv("GEMINI_API_KEY")
-AI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
+AI_MODEL_NAME = os.getenv("GEMINI_MODEL")
 
 class AutoCorrector:
     """
@@ -35,15 +34,6 @@ class AutoCorrector:
         self.english_variation = english_variation
         # Keep document_checker for backward compatibility
         self.document_checker = DocumentChecker(language=language, english_variation=english_variation)
-        # Initialize Gemini-based corrector
-        self.gemini_corrector = None
-        try:
-            if AI_API_KEY:
-                self.gemini_corrector = GeminiCorrector(api_key=AI_API_KEY, model_name=AI_MODEL_NAME)
-                print(f"Initialized Gemini AI for text correction with model: {AI_MODEL_NAME}")
-        except Exception as e:
-            print(f"Warning: Could not initialize Gemini corrector: {e}")
-            print("Falling back to basic spell checker.")
     
     def _initialize_ai_model(self):
         """Initialize the AI model for advanced grammar correction."""
@@ -180,46 +170,9 @@ class AutoCorrector:
             "total_corrections": 0
         }
         
-        # Use Gemini AI if enabled and available
-        if use_ai_correction and self.gemini_corrector:
-            print("Using Gemini AI for text correction (spelling, grammar, punctuation, and capitalization)...")
-            try:
-                # Gemini handles spelling, grammar, punctuation, and capitalization in one pass
-                corrected_paragraphs, gemini_summary = self.gemini_corrector.correct_paragraphs(paragraphs, chunk_size=chunk_size)
-                
-                # Update correction summary with error handling
-                try:
-                    # Handle possible missing or non-dict gemini_summary
-                    if not isinstance(gemini_summary, dict):
-                        print(f"Warning: Unexpected correction summary type: {type(gemini_summary)}")
-                        gemini_summary = {"total_corrections": 0, "details": [], "corrections_by_type": {}}
-                        
-                    correction_summary["total_corrections"] = gemini_summary.get("total_corrections", 0)
-                    
-                    # Organize corrections by type
-                    by_type = gemini_summary.get("corrections_by_type", {})
-                    for corr in gemini_summary.get("details", []):
-                        if not isinstance(corr, dict):
-                            continue  # Skip non-dictionary corrections
-                            
-                        corr_type = corr.get("type", "spelling")
-                        original = corr.get("original", "")
-                        corrected = corr.get("corrected", "")
-                        
-                        if corr_type in correction_summary and original and corrected:
-                            correction_summary[corr_type][original] = corrected
-                except Exception as e:
-                    print(f"Warning: Error processing correction summary: {e}")
-                
-                # Display Gemini correction report with safe dictionary access
-                if gemini_summary.get("total_corrections", 0) > 0:
-                    print(self.gemini_corrector.generate_correction_report(gemini_summary))
-                
-                return corrected_paragraphs, correction_summary
-                
-            except Exception as e:
-                print(f"Error during Gemini AI correction: {e}")
-                print("Falling back to basic spell checker.")
+        # AI correction has been removed
+        if use_ai_correction:
+            print("Note: AI correction has been disabled")
         
         # Fall back to standard spell checking if Gemini is not available or failed
         if auto_fix_spelling:
@@ -287,16 +240,12 @@ class AutoCorrector:
         Returns:
             Tuple of (corrected_paragraphs, correction_summary)
         """
-        if self.gemini_corrector:
-            print("Using Gemini AI for comprehensive text correction...")
-        else:
-            print("Gemini AI not available. Falling back to basic spell checker.")
-            
+        print("Using basic spell checker...")
         return self.correct_document(
             paragraphs,
             auto_fix_spelling=True,
-            auto_fix_grammar=True,  # Enable grammar correction via Gemini AI
-            use_ai_correction=True,  # Try to use Gemini AI for all corrections
+            auto_fix_grammar=False,
+            use_ai_correction=False,
             chunk_size=chunk_size
         )
         

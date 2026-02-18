@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formatly - AI Document Formatter</title>
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- Using Google Fonts for Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <nav class="sidebar glass-panel">
+        <div class="logo-container">
+          <img src="logo.png" alt="Formatly Logo" class="logo-image" />
+          <h1 class="logo-text">Formatly</h1>
+        </div>
+
+        <div class="nav-section">
+          <h3 class="nav-header">Main</h3>
+          <a href="#" class="nav-item active" data-view="dashboard">
+            <span class="icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+          <a href="#" class="nav-item" data-view="documents">
+            <span class="icon">📄</span>
+            <span class="nav-text">My Documents</span>
+          </a>
+          <a href="#" class="nav-item" data-view="styles">
+            <span class="icon">🎨</span>
+            <span class="nav-text">Formatting Preferences</span>
+          </a>
+          <a href="#" class="nav-item" data-view="chat">
+            <span class="icon">🤖</span>
+            <span class="nav-text">Ask Formatly AI</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <h3 class="nav-header">Billing</h3>
+          <a href="#" class="nav-item disabled">
+            <span class="icon">💳</span>
+            <span class="nav-text">Billing & Subscription</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <h3 class="nav-header">Settings</h3>
+          <a href="#" class="nav-item disabled">
+            <span class="icon">👤</span>
+            <span class="nav-text">Account Settings</span>
+          </a>
+          <a href="#" class="nav-item" data-view="settings">
+            <span class="icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+          <a href="#" class="nav-item disabled">
+            <span class="icon">❓</span>
+            <span class="nav-text">Help & FAQ</span>
+          </a>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="user-profile">
+          <div class="user-info">
+            <p class="user-name loading" id="sidebarUserName">--</p>
+            <div class="plan-info">
+              <span>Plan:</span>
+              <span class="badge badge-blue loading" id="sidebarPlan">--</span>
+            </div>
+            <div class="usage-bar-container">
+              <div class="usage-text">
+                <span>Documents</span>
+                <span id="sidebarUsageText" class="loading">--/--</span>
+              </div>
+              <div class="progress-bar-sm">
+                <div class="progress-fill-sm" id="sidebarUsageFill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Top Header -->
+        <header class="top-header glass-panel pywebview-drag-region">
+          <div class="header-left">
+            <button class="icon-btn" id="sidebarToggle">
+              <span class="icon">☰</span>
+            </button>
+          </div>
+          <!-- Spacer to push right content -->
+          <div class="spacer"></div>
+          <div class="header-right">
+            <button class="btn btn-outline small" id="quickUploadBtn">
+              <span class="icon">📤</span> Quick Upload
+            </button>
+            <button class="icon-btn round">
+              <span class="icon">🌙</span>
+            </button>
+            <button class="icon-btn round">
+              <span class="icon">🔔</span>
+            </button>
+            <button class="icon-btn round avatar">
+              <span class="icon">👤</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view active">
+          <div class="dashboard-intro">
+            <div class="welcome-text">
+              <h2 id="welcomeName" class="loading">Welcome</h2>
+              <p>Here's what's happening with your documents.</p>
+            </div>
+            <div class="dashboard-actions">
+              <span class="badge badge-blue">Pro</span>
+              <button class="btn btn-primary" id="mainUploadBtn">
+                <span class="icon">📤</span> Upload
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card glass-panel">
+              <div class="stat-header">
+                <span>Documents</span>
+                <span class="icon">📄</span>
+              </div>
+              <div class="stat-value loading" id="statDocuments">--</div>
+            </div>
+            <div class="stat-card glass-panel">
+              <div class="stat-header">
+                <span>Processing</span>
+                <span class="icon text-yellow">🕒</span>
+              </div>
+              <div class="stat-value loading" id="statProcessing">--</div>
+            </div>
+            <div class="stat-card glass-panel">
+              <div class="stat-header">
+                <span>Formatted</span>
+                <span class="icon text-blue">✅</span>
+              </div>
+              <div class="stat-value loading" id="statFormatted">--</div>
+            </div>
+            <div class="stat-card glass-panel">
+              <div class="stat-header">
+                <span>Plan</span>
+                <span class="icon text-blue">💳</span>
+              </div>
+              <div class="stat-value loading" id="statPlan">--</div>
+              <div class="stat-sub loading" id="statPlanUsage">--/--</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions Grid -->
+          <div class="actions-grid">
+            <button class="action-card glass-panel" id="actionUpload">
+              <span class="icon text-blue">📤</span>
+              <span>Upload</span>
+            </button>
+            <button
+              class="action-card glass-panel"
+              onclick="navigateTo('documents')"
+            >
+              <span class="icon text-blue">📄</span>
+              <span>Documents</span>
+            </button>
+            <button class="action-card glass-panel">
+              <span class="icon text-blue">❓</span>
+              <span>AI Help</span>
+            </button>
+            <button
+              class="action-card glass-panel"
+              onclick="navigateTo('styles')"
+            >
+              <span class="icon text-blue">📖</span>
+              <span>Styles</span>
+            </button>
+          </div>
+
+          <!-- Section Title -->
+          <div class="section-title">
+            <h3>Recent Documents</h3>
+          </div>
+
+          <!-- Documents List (Dashboard) -->
+          <div class="doc-list glass-panel" id="recentDocsList">
+            <!-- Populated by JS -->
+            <div class="empty-state">Loading recent documents...</div>
+          </div>
+        </div>
+
+        <!-- Documents View -->
+        <div id="view-documents" class="view" style="display: none">
+          <div class="view-header">
+            <div class="view-title">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  margin-bottom: 8px;
+                "
+              >
+                <h2 style="margin: 0">My Documents</h2>
+                <span class="badge badge-pink">Pro</span>
+              </div>
+              <p class="view-subtitle">
+                Manage and organize your formatted documents
+              </p>
+            </div>
+          </div>
+
+          <div class="filters-bar">
+            <div class="filters-left">
+              <button class="btn btn-dark">
+                <span class="icon">⚡</span> Filters
+              </button>
+            </div>
+            <div
+              class="filters-right"
+              style="display: flex; align-items: center; gap: 12px"
+            >
+              <span class="doc-count loading" id="docCountText" style="margin-right: 12px"
+                >-- Documents</span
+              >
+              <button class="btn btn-outline">
+                <span class="icon">🔄</span> Refresh
+              </button>
+              <button class="btn btn-primary" id="docViewUploadBtn">
+                <span class="icon">📄</span> Upload New
+              </button>
+            </div>
+          </div>
+
+          <div class="data-table-container glass-panel">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th width="40"><input type="checkbox" /></th>
+                  <th>File Name</th>
+                  <th width="150">Style</th>
+                  <th width="80" style="text-align: center;">Open</th>
+                </tr>
+              </thead>
+              <tbody id="allDocsTableBody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Styles View -->
+        <div id="view-styles" class="view" style="display: none">
+          <div class="view-header">
+            <div class="view-title">
+              <h2>Formatting Preferences</h2>
+              <p class="view-subtitle">
+                Customize your default document formatting settings
+              </p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-outline">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                </span> Refresh
+              </button>
+              <button class="btn btn-primary" id="saveStylesBtn">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                </span> Save
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-section glass-panel">
+            <h3 class="section-heading">Academic Styles</h3>
+            <p class="section-sub">
+              Choose from database-driven formatting styles and set your default
+              preferences
+            </p>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Default Formatting Style</label>
+                <select class="form-select" id="prefStyle">
+                  <option value="apa">APA (7th Edition)</option>
+                  <option value="mla">MLA (9th Edition)</option>
+                  <option value="chicago">Chicago</option>
+                  <option value="harvard">Harvard</option>
+                  <option value="ieee">IEEE</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>English Variant</label>
+                <select class="form-select" id="prefEnglishVariant">
+                  <option value="ca">Canadian English</option>
+                  <option value="us">US English</option>
+                  <option value="uk">UK English</option>
+                  <option value="au">Australian English</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Citation Style</label>
+                <select class="form-select" id="prefCitationStyle">
+                  <option>MLA Style</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Default Font</label>
+                <select class="form-select" id="prefDefaultFont">
+                  <option>Calibri</option>
+                  <option>Times New Roman</option>
+                  <option>Arial</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section glass-panel mt-4">
+            <h3 class="section-heading">Processing Options</h3>
+            <p class="section-sub">
+              Configure how your documents are processed and formatted
+            </p>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <label>Tracked Changes</label>
+                <p>
+                  Receive both a neat copy and a version showing all formatting
+                  changes
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefTrackChanges" />
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-section glass-panel mt-4">
+            <h3 class="section-heading">AI Backend</h3>
+            <div class="form-group">
+              <label>Select AI Model</label>
+              <select class="form-select" id="prefBackend">
+                <option value="huggingface">Hugging Face (Local/Remote)</option>
+                <option value="gemini">Google Gemini (Cloud)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="view-chat" class="view" style="display: none; padding: 0; overflow: hidden; height: 100%;">
+            <div class="chat-container">
+                
+                <!-- Welcome Screen (Initial State) -->
+                <div class="chat-welcome-screen" id="chatWelcomeScreen">
+                    <div class="welcome-header">
+                        <span class="sparkle-icon" style="filter: none; -webkit-background-clip: unset; background: none; color: white; font-size: 32px;">🤖</span>
+                    </div>
+                    <h1 class="welcome-headline">How can I help you format today?</h1>
+                    
+                    <div class="chat-input-centered">
+                        <div class="chat-input-box">
+                            <textarea id="chatInputMain" placeholder="Ask Formatly AI..." rows="1"></textarea>
+                            
+                            <!-- Clean Input: No extra tools/pro buttons -->
+                            <div class="input-actions-right" style="bottom: 16px; right: 20px;">
+                                <button class="icon-btn-filled" id="sendChatBtnMain">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-black">
+                                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions-row">
+                        <button class="quick-action-pill" data-question="How do I format APA citations?">
+                            <span class="action-icon">📖</span> How do I format APA citations?
+                        </button>
+                        <button class="quick-action-pill" data-question="What's the difference between MLA and APA?">
+                            <span class="action-icon">⚖️</span> MLA vs APA
+                        </button>
+                        <button class="quick-action-pill" data-question="How to create a table of contents?">
+                            <span class="action-icon">📑</span> Create Table of Contents
+                        </button>
+                        <button class="quick-action-pill" data-question="Help with reference formatting">
+                            <span class="action-icon">📚</span> Reference Formatting
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Area (Active State) -->
+                <div class="chat-interface" id="chatInterface" style="display: none;">
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages go here -->
+                    </div>
+                    <div class="chat-input-area interface-mode">
+                         <div class="chat-input-box">
+                            <textarea id="chatInputInterface" placeholder="Ask Formatly AI" rows="1"></textarea>
+                            <div class="input-actions-right">
+                                <button class="icon-btn-filled" id="sendChatBtnInterface">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="view-settings" class="view" style="display: none">
+          <div class="view-header">
+            <div class="view-title">
+              <h2>Settings</h2>
+              <p class="view-subtitle">Customize your Formatly experience</p>
+            </div>
+          </div>
+
+          <div class="settings-section glass-panel">
+            <div class="section-heading-row">
+              <span class="icon">☀️</span>
+              <h3>Appearance</h3>
+            </div>
+            <p class="section-sub ml-icon">
+              Customize the look and feel of the application
+            </p>
+
+            <div class="form-group ml-icon">
+              <label>Theme</label>
+              <select class="form-select" id="prefTheme">
+                <option>Dark Mode</option>
+                <option>Light Mode</option>
+                <option>System Default</option>
+              </select>
+            </div>
+
+            <div class="toggle-row ml-icon mt-4">
+              <div class="toggle-info">
+                <label>Sidebar Default State</label>
+                <p>Show sidebar expanded by default</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked />
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Hidden File Input for Uploads -->
+    <input type="file" id="fileInput" accept=".docx" style="display: none" />
+
+    <!-- Upload Options Modal -->
+    <div id="uploadOptionsModal" class="modal">
+      <div class="modal-content glass-panel upload-modal-content">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title-text">Formatting Options</h3>
+            <p class="modal-subtitle-text">
+              Configure how your documents should be formatted
+            </p>
+          </div>
+          <button class="icon-btn" id="closeUploadModalBtn">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="segmented-control">
+          <button class="segment-btn active" data-tab="upload-basic">
+            Basic Settings
+          </button>
+          <button class="segment-btn" data-tab="upload-advanced">
+            Advanced
+          </button>
+        </div>
+
+        <p
+          class="section-sub"
+          id="uploadFileName"
+          style="
+            margin-top: 16px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            opacity: 0.7;
+          "
+        >
+          Selected: filename.docx
+        </p>
+
+        <!-- Basic Tab -->
+        <div id="upload-basic" class="tab-content active">
+          <div class="form-group">
+            <label>Academic Style</label>
+            <div class="select-wrapper">
+              <select class="form-select" id="uploadStyle">
+                <option value="apa">APA (7th Edition)</option>
+                <option value="mla">MLA (9th Edition)</option>
+                <option value="chicago">Chicago</option>
+                <option value="harvard">Harvard</option>
+                <option value="ieee">IEEE</option>
+              </select>
+              <span class="select-desc"
+                >American Psychological Association style</span
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>English Variant</label>
+            <div class="select-wrapper">
+              <select class="form-select" id="uploadEnglishVariant">
+                <option value="ca">Canadian English</option>
+                <option value="us">US English</option>
+                <option value="uk">UK English</option>
+                <option value="au">Australian English</option>
+              </select>
+              <span class="select-desc"
+                >Canadian English spelling and grammar</span
+              >
+            </div>
+          </div>
+
+          <div class="card-option">
+            <div class="toggle-info">
+              <label>Tracked Changes</label>
+              <p>
+                Receive both a neat copy and a version showing all formatting
+                changes
+              </p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="uploadTrackChanges" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Advanced Tab -->
+        <div id="upload-advanced" class="tab-content" style="display: none">
+          <div class="form-group">
+            <label>AI Backend</label>
+            <div class="select-wrapper">
+              <select class="form-select" id="uploadBackend">
+                <option value="huggingface">Hugging Face (Local/Remote)</option>
+                <option value="gemini">Google Gemini (Cloud)</option>
+              </select>
+              <span class="select-desc">Choose the processing engine</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions modal-actions-right" style="margin-top: 24px">
+          <button class="btn btn-outline" id="cancelUploadBtn">Cancel</button>
+          <button class="btn btn-primary" id="confirmUploadBtn">
+            <span class="icon">✨</span> Start Formatting
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formatting Modal (Progress) -->
+    <div id="formattingModal" class="modal">
+      <div class="modal-content glass-panel">
+        <div
+          style="display: flex; justify-content: flex-end; margin-bottom: 10px"
+        >
+          <button
+            class="icon-btn"
+            id="minimizeFormatBtn"
+            title="Minimize to background"
+          >
+            <span style="font-size: 14px">_</span>
+          </button>
+        </div>
+        <h3 id="modalTitle">Processing Document...</h3>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-text" id="progressText">Initializing...</div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" id="cancelFormatBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Progress Widget -->
+    <div
+      id="floatingProgress"
+      class="floating-progress glass-panel"
+      style="display: none"
+    >
+      <div class="fp-header">
+        <span class="fp-title">Formatting...</span>
+        <div class="fp-controls">
+          <button class="icon-btn xs" id="restoreFormatBtn" title="Expand">
+            ⤢
+          </button>
+        </div>
+      </div>
+      <div class="fp-bar-container">
+        <div class="fp-bar-fill" id="fpProgressFill"></div>
+      </div>
+      <div class="fp-text" id="fpProgressText">Initializing...</div>
+    </div>
+
+    <!-- Generic Alert Modal -->
+    <div id="alertModal" class="modal">
+      <div class="modal-content glass-panel modal-sm">
+        <div class="modal-header modal-header-center">
+          <h3 id="alertTitle">Alert</h3>
+        </div>
+        <p id="alertMessage" class="modal-message">Message goes here</p>
+        <button class="btn btn-primary w-full" id="alertOkBtn">OK</button>
+      </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu" style="display: none;">
+        <!-- Populated by JS -->
+    </div>
+
+    <!-- Generic Confirm Modal -->
+    <div id="confirmModal" class="modal">
+      <div class="modal-content glass-panel modal-sm">
+        <div class="modal-header modal-header-center">
+          <h3 id="confirmTitle">Confirm</h3>
+        </div>
+        <p id="confirmMessage" class="modal-message">Are you sure?</p>
+        <div class="modal-actions modal-actions-center">
+          <button class="btn btn-outline flex-1" id="confirmCancelBtn">
+            Cancel
+          </button>
+          <button class="btn btn-primary flex-1" id="confirmOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="qwebchannel.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

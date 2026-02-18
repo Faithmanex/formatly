@@ -1,0 +1,1494 @@
+"""
+Formatly Desktop Core Formatter
+-------------------------------
+This module contains the core formatting logic specifically for the Desktop application.
+
+MAINTENANCE WARNING:
+    This file is currently a duplicate of the root `core/formatter.py`.
+    It exists here to keep the desktop application self-contained.
+    Any changes made to the logic here should likely be mirrored in the root `core/`
+    and vice-versa, until a shared library structure is fully implemented.
+"""
+
+from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from docx.oxml.shared import OxmlElement
+from docx.shared import Inches, Pt, RGBColor
+from docx.oxml.ns import qn
+from docx.enum.style import WD_STYLE_TYPE
+from style_guides import STYLE_GUIDES
+from core.api_clients import AIClient
+from core.constants import STYLE_MAPPINGS
+import json
+import os
+import re
+import traceback
+import json5
+import time
+import csv
+from datetime import datetime
+from pathlib import Path
+
+class DocumentStructureManager:
+    """Manages document structure initialization, validation, and prompt creation."""
+    
+    @staticmethod
+    def get_default_structure() -> dict:
+        """Returns the default document structure template."""
+        return {
+            "blocks": [
+                {
+                    "type": "", 
+                    "content": "",
+                    "attributes": {}
+                }
+            ]
+        }
+    
+    @staticmethod
+    def create_detection_prompt(paragraphs: list, english_variant: str = "us") -> tuple[str, str]:
+        """Creates system and user prompts for document structure detection."""
+        # Use a hardcoded, populated example to guide the AI better
+        example_structure = {
+            "blocks": [
+                {
+                    "type": "heading_1",
+                    "content": "Introduction to AI",
+                    "attributes": {}
+                },
+                {
+                    "type": "body",
+                    "content": "Artificial Intelligence is a rapidly evolving field...",
+                    "attributes": {}
+                }, 
+                {
+                    "type": "list_item_bullet", 
+                    "content": "Machine Learning", 
+                    "attributes": {"list_id": 1}
+                }
+            ]
+        }
+        json_structure = json.dumps(example_structure, indent=4)
+        
+        system_prompt = f"""You are an expert academic document parser and formatting assistant. Your task is to analyze the provided document content and extract it into a structured JSON format using a Linear Block Schema.
+        
+        TARGET JSON STRUCTURE:
+        {json_structure}
+        
+        ⛔ CRITICAL EXTRACTION RULES:
+        1. **Verbatim Extraction**: You must extract the text EXACTLY as it appears in the input. Do NOT summarize, Do NOT paraphrase, Do NOT remove words, Do NOT remove spaces, or "correct" typos/headings. Even if a heading appears redundant, extract it fully.
+        2. **Content integrity**: Do not omit any paragraphs, headings, or sections. Every piece of text from the input must find a home in the JSON structure.
+        3. **Valid JSON**: Your output must be strictly valid JSON.
+        4. **CHAPTER TITLES**: Strings like "CHAPTER ONE", "CHAPTER 1", "CHAPTER I" are ALWAYS "heading_1".
+        5. **CHAPTER NAMES & SECTIONS**: Top-level numbered sections (e.g., "1. Introduction", "2. Literature Review") MUST be "heading_1". HEADINGS following "CHAPTER X" must be "heading_1". Only demote to "heading_2" if the number indicates a subsection (e.g., "1.1", "2.3", "A.1", etc.).
+        6. **HEADING LENGTH**: Headings are titles, NOT paragraphs. If a line of text is longer than ~12 words, it is likely "body" text, NOT a heading.
+        7. **LISTS**: Assign the correct type and add a "list_id" (integer) field INSIDE "attributes".
+           - **Type Selection**:
+             - Use `list_item_bullet` for **unordered** lists.
+             - Use `list_item_number` for **ordered**.
+             - Use `list_item_alphabet` for **ordered**.
+           - **Grouping**: Items in the same list MUST share the same "list_id".
+           - **Restarts**: When a new list starts (e.g., after some body text), use a NEW "list_id".
+
+        EXAMPLE BLOCK FOR LIST ITEM:
+        {{
+            "type": "list_item_number",
+            "content": "First item",
+            "attributes": {{"list_id": 1}}
+        }}
+
+        8. **No Empty Blocks**: Do NOT create blocks with empty content (content: ""). If a line is empty, ignore it.
+        
+        9. **APPENDICES**: 
+           - Use `appendices_heading` for the master title "APPENDICES" or "LIST OF APPENDICES" (e.g., when it stands alone with sub appendices headings, eg. "Appendix A", "Appendix 1: Data Tables", "Conclusion of Appendix, etc.").
+           - Use `appendix_heading` for individual appendix titles (e.g., "Appendix A", "Appendix 1: Data Tables", "Conclusion of Appendix, etc.").
+
+        10. **Block Types**: Assign one of the following types to each block of content:
+           - "title", "title_byline", "author", "institution", "title_department", "course", "instructor", "due_date" (Title Page Elements)
+            - "keywords", "epigraph", "abstract_heading", "abstract_text" (Top-level Headings)
+            - "dedication_heading", "dedication_body", "acknowledgements_heading", "acknowledgement_body", "preface_heading", "preface_body" (Front Matter)
+           - "heading_1", "heading_2", "heading_3", "heading_4", "heading_5". 
+           - "body" (Standard Paragraphs)
+           - "list_item_number", "list_item_bullet", "list_item_alphabet"
+           - "block_quote"
+           - "figure_caption", "table_caption", "table_note", "table_data"
+           - "references_heading", "reference_list_item"
+           - "appendices_heading", "appendix_heading"
+           - "code_block", "footnote"
+
+        11. **Headings for preliminary pages (title page, abstract page, etc.) should use their specific types (e.g., "abstract_heading") if available, otherwise "heading_1".**
+
+        Analyze the input document and populate the "blocks" list accordingly, intelligently."""
+        
+        user_prompt = f"Input content:\n\n{'\n'.join(paragraphs)}\n\nReturn JSON only."
+        
+        return system_prompt, user_prompt
+    
+    @staticmethod
+    def parse_and_validate_response(response_text: str) -> dict:
+        """Parses and validates AI response into document structure."""
+        text = response_text.strip()
+        
+        # Clean markdown
+        for marker in ["```json", "```"]:
+            if text.startswith(marker):
+                text = text[len(marker):]
+            if text.endswith("```"):
+                text = text[:-3]
+        
+        text = text.strip()
+        
+        # Validate basic JSON structure
+        if not text or text[0] not in ['{', '[']:
+            raise json.JSONDecodeError(f"Invalid JSON: {text[:100]}...", text, 0)
+        
+        try:
+            data = json5.loads(text)
+            return DocumentStructureManager.validate_structure(data)
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"JSON parse error: {e}")
+            print(f"Raw response snippet: {response_text[:500]}...")
+            raise
+    
+    @staticmethod
+    def validate_structure(data: dict) -> dict:
+        """Validates and sanitizes document structure."""
+        if not isinstance(data, dict):
+            raise ValueError("Document structure must be a dictionary")
+        
+        template = DocumentStructureManager.get_default_structure()
+        
+        # Deep merge with template
+        def deep_merge(template_dict, data_dict):
+            result = template_dict.copy()
+            for key, value in data_dict.items():
+                if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                    result[key] = deep_merge(result[key], value)
+                else:
+                    result[key] = value
+            return result
+        
+        return deep_merge(template, data)
+
+class AdvancedFormatter:
+    def __init__(self, style_name: str, ai_client: AIClient, english_variant: str = "us"):
+        self.selected_style_name = style_name.lower()
+        # Ensure fallback to APA if style not found
+        self.selected_style_guide = STYLE_GUIDES.get(self.selected_style_name, STYLE_GUIDES["apa"])
+        self.ai_client = ai_client
+        self.english_variant = english_variant
+        
+        print(f"Loaded Style: {self.selected_style_name} | Language: {self.english_variant}")
+        # Pre-compile reference formatting patterns
+        self._compile_reference_patterns()
+        # Compile inline formatting patterns
+        self._compile_inline_patterns()
+        # Cache for document styles
+        self._doc_styles = None
+
+    def _compile_reference_patterns(self):
+        """Pre-compile reference formatting patterns for efficiency."""
+        ref_config = self.selected_style_guide.get('reference_formatting', {})
+        self.compiled_ref_patterns = []
+        for pattern in ref_config.get('patterns', []):
+            if 'regex' in pattern and 'formatting' in pattern:
+                self.compiled_ref_patterns.append({
+                    'pattern': re.compile(pattern['regex'], re.DOTALL),
+                    'formatting': pattern['formatting']
+                })
+
+    def _compile_inline_patterns(self):
+        """Pre-compile inline formatting patterns."""
+        inline_config = self.selected_style_guide.get('inline_formatting', [])
+        self.compiled_inline_patterns = []
+        for rule in inline_config:
+            if 'regex' in rule and 'formatting' in rule:
+                self.compiled_inline_patterns.append({
+                    'pattern': re.compile(rule['regex']),
+                    'formatting': rule['formatting'],
+                    'target_styles': rule.get('target_styles', [])
+                })
+
+    def _apply_inline_formatting(self, doc):
+        """
+        Apply inline formatting based on regex patterns defined in style guide.
+        """
+        if not hasattr(self, 'compiled_inline_patterns') or not self.compiled_inline_patterns:
+            return
+        
+        for p in doc.paragraphs:
+            if not p.text.strip():
+                continue
+            style_name = p.style.name if hasattr(p.style, 'name') else str(p.style)
+            
+            for rule in self.compiled_inline_patterns:
+                if rule['target_styles'] and style_name not in rule['target_styles']:
+                    continue
+                for match in rule['pattern'].finditer(p.text):
+                    start_idx, end_idx = match.span()
+                    self._apply_formatting_to_range(p, start_idx, end_idx, rule['formatting'])
+
+    def _apply_formatting_to_range(self, paragraph, start_char, end_char, formatting):
+        self._ensure_run_boundary(paragraph, start_char)
+        self._ensure_run_boundary(paragraph, end_char)
+        current_pos = 0
+        for run in paragraph.runs:
+            run_len = len(run.text)
+            run_end = current_pos + run_len
+            if current_pos >= start_char and run_end <= end_char:
+                if not run.font: run.font = paragraph.style.font 
+                if 'italic' in formatting: run.font.italic = formatting['italic']
+                if 'bold' in formatting: run.font.bold = formatting['bold']
+            current_pos = run_end
+
+    def _ensure_run_boundary(self, paragraph, char_index):
+        current_pos = 0
+        for i, run in enumerate(paragraph.runs):
+            run_text = run.text
+            run_len = len(run_text)
+            if current_pos < char_index < current_pos + run_len:
+                split_point = char_index - current_pos
+                part1 = run_text[:split_point]
+                part2 = run_text[split_point:]
+                run.text = part1
+                new_run = paragraph.add_run(part2)
+                self._copy_run_formatting(run, new_run)
+                p_element = paragraph._p
+                run_element = run._element
+                new_run_element = new_run._element
+                p_element.remove(new_run_element)
+                run_element.addnext(new_run_element)
+                return
+            current_pos += run_len
+
+    def _get_style(self, doc, style_name):
+        """Get an existing style from the document."""
+        return doc.styles[style_name]
+
+    def _log_stats(self, input_path, duration, usage_stats):
+        """Log formatting stats to CSV."""
+        log_file = "formatting_stats.csv"
+        file_exists = os.path.isfile(log_file)
+        
+        # Usage stats object attributes depend on the client implementation
+        # For OpenAI/HuggingFace it's an object, for Gemini it might be None or different
+        prompt_tokens = 0
+        completion_tokens = 0
+        total_tokens = 0
+        
+        if usage_stats:
+             if hasattr(usage_stats, 'prompt_tokens'):
+                 prompt_tokens = usage_stats.prompt_tokens
+                 completion_tokens = usage_stats.completion_tokens
+                 total_tokens = usage_stats.total_tokens
+        
+        try:
+            with open(log_file, mode='a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                if not file_exists:
+                    writer.writerow(['Timestamp', 'Input File', 'Duration (s)', 'Prompt Tokens', 'Completion Tokens', 'Total Tokens'])
+                
+                writer.writerow([
+                    datetime.now().isoformat(),
+                    os.path.basename(input_path),
+                    f"{duration:.2f}",
+                    prompt_tokens,
+                    completion_tokens,
+                    total_tokens
+                ])
+            print(f"\n📊 Stats recorded to {log_file}")
+            print("-" * 30)
+            print(f"⏱️  Duration:      {duration:.2f}s")
+            print(f"🔢 Total Tokens:  {total_tokens}")
+            print(f"   • Prompt:      {prompt_tokens}")
+            print(f"   • Completion:  {completion_tokens}")
+            print("-" * 30)
+        except Exception as e:
+            print(f"Warning: Failed to log stats: {e}")
+
+    def format_document(self, input_path, output_path, doc=None):
+        if doc is None:
+            doc = Document(input_path)
+        
+        # Cache document styles
+        self._doc_styles = doc.styles
+
+        # Step 0: Remove leading whitespace
+        self._remove_leading_whitespace(doc)
+
+        # Step 0b: Clear old run formatting
+        self._clear_run_formatting(doc)
+
+        # Step 1: Apply base styles and margins
+        self._customize_builtin_styles(doc)
+        self._apply_margins(doc)
+
+        # Start timer for AI request and formatting
+        start_time = time.time()
+
+        # Step 2: Detect document structure
+        paragraphs_text = [p.text for p in doc.paragraphs]
+        doc_structure, usage_stats = self._detect_paragraph_types(paragraphs_text)
+
+        # Step 3: Detect if a title page exists and find its boundary
+        has_title_page, title_page_boundary = self._detect_and_manage_title_page(doc, doc_structure)
+
+        # Step 4: Add page numbers based on title page presence
+        # self._add_page_numbers(doc, has_title_page, title_page_boundary)
+
+        # Step 5: Join split headings (e.g., CHAPTER X + Title)
+        self._join_headings(doc, doc_structure)
+
+        # Step 6: Format document content
+        self._format_content_in_place(doc, doc_structure, has_title_page, title_page_boundary)
+
+        # Step 7: Format references section
+        self._format_references(doc, doc_structure)
+
+        # Step 8: Apply consistent font properties
+        self._apply_font_properties(doc)
+        # Step 8b: Format tables
+        self._format_tables(doc)
+
+        self._apply_explicit_paragraph_properties(doc)
+        # Step 7b: Apply explicit list/numbering properties (bullets / numbers)
+        self._apply_list_properties(doc)
+
+        self._apply_heading_styles(doc)
+        
+        # Step 7c: Apply inline formatting (italicize specific keywords etc.)
+        self._apply_inline_formatting(doc)
+
+        # Step 8: Remove extra blank lines (but keep before title page boundary)
+        self._remove_blank_lines(doc, title_page_boundary)
+
+
+        # Final: Save document with retry logic
+        output_path_obj = Path(output_path)
+        final_output_path = str(output_path_obj)
+        
+        for i in range(100):  # Try up to 100 times
+            try:
+                doc.save(final_output_path)
+                break
+            except PermissionError:
+                # If file is locked/permission denied, try adding a suffix
+                # We use (1), (2), etc.
+                stem = output_path_obj.stem
+                # Check if stem already ends with (N)
+                # But simple appending (N) is safer and easier to implement robustly
+                # If we want strictly (1), (2), we could parse, but simple increment works:
+                # If file(1) exists/locked, we try file(2).
+                
+                # Logic: If failure, calculate next candidate name
+                
+                # If it's the first attempt (i=0), we failed on original name.
+                # Next attempt (i=1) should try suffix (1).
+                # Next attempt (i=2) should try suffix (2).
+                # But wait, i is just the attempt counter.
+                
+                # Let's actually base it on i+1 for the suffix if i > 0 is confusing.
+                # Better: try original, then try (1), then (2).
+                # The loop variable i is 0 on first run.
+                # So if i==0 failed, next loop i=1. We want suffix (1).
+                # So suffix is (i).
+                
+                new_stem = f"{stem} ({i+1})"
+                final_output_path = str(output_path_obj.with_name(f"{new_stem}{output_path_obj.suffix}"))
+                print(f"Permission denied. Retrying with: {final_output_path}")
+            except Exception as e:
+                # Other errors, just raise
+                raise e
+        
+        # End timer and log stats
+        end_time = time.time()
+        duration = end_time - start_time
+        self._log_stats(input_path, duration, usage_stats)
+        
+        return final_output_path
+
+    def _customize_builtin_styles(self, doc):
+        """
+        Customize built-in styles and add custom styles based on the style guide.
+        """
+        # Cache style configurations and document styles
+        styles_config = self.selected_style_guide["styles"]
+        doc_styles = doc.styles
+        
+        # Process each style in the configuration
+        for style_name, style_config in styles_config.items():
+            try:
+                # Get the style. If it doesn't exist, create it.
+                if style_name not in doc_styles:
+                    style_type = style_config.get("type", WD_STYLE_TYPE.PARAGRAPH)
+                    doc.styles.add_style(style_name, style_type)
+
+                style = self._get_style(doc, style_name)
+                
+                # Set base style if specified
+                if "based_on" in style_config and style_config["based_on"] in doc_styles:
+                    style.base_style = doc_styles[style_config["based_on"]]
+                
+                # Apply font styles directly
+                if "font" in style_config:
+                    font_config = style_config["font"]
+                    font = style.font
+
+                    # Apply all font properties
+                    if "name" in font_config:
+                        font.name = font_config["name"]
+                    if "size" in font_config:
+                        font.size = font_config["size"]
+                    if "bold" in font_config:
+                        font.bold = font_config["bold"]
+                    if "italic" in font_config:
+                        font.italic = font_config["italic"]
+                    if "underline" in font_config:
+                        font.underline = font_config["underline"]
+                    if "color" in font_config and font_config["color"]:
+                        font.color.rgb = font_config["color"]
+                    if "all_caps" in font_config:
+                        font.all_caps = font_config["all_caps"]
+
+                
+                # Apply paragraph settings
+                if "paragraph" in style_config:
+                    para_format = style.paragraph_format
+                    para_config = style_config["paragraph"]
+                    
+                    # Apply paragraph properties if they exist in the config
+                    if "name" in para_config:
+                        para_format.name = para_config["name"]
+                    if "alignment" in para_config:
+                        para_format.alignment = para_config["alignment"]
+                    if "left_indent" in para_config:
+                        para_format.left_indent = para_config["left_indent"]
+                    if "right_indent" in para_config:
+                        para_format.right_indent = para_config["right_indent"]
+                    if "first_line_indent" in para_config:
+                        para_format.first_line_indent = para_config["first_line_indent"]
+                    if "space_before" in para_config:
+                        para_format.space_before = para_config["space_before"]
+                    if "space_after" in para_config:
+                        para_format.space_after = para_config["space_after"]
+                    if "line_spacing" in para_config:
+                        para_format.line_spacing_rule = para_config["line_spacing"]
+                    if "keep_together" in para_config:
+                        para_format.keep_together = para_config["keep_together"]
+                    if "keep_with_next" in para_config:
+                        para_format.keep_with_next = para_config["keep_with_next"]
+                    if "page_break_before" in para_config:
+                        para_format.page_break_before = para_config["page_break_before"]
+                    if "widow_control" in para_config:
+                        para_format.widow_control = para_config["widow_control"]
+                    if "orphan_control" in para_config:
+                        try:
+                            para_format.orphan_control = para_config["orphan_control"]
+                        except AttributeError:
+                            # pass if not supported
+                            pass
+                    if "outline_level" in para_config:
+                        try:
+                            para_format.outline_level = para_config["outline_level"]
+                        except AttributeError:
+                            pass
+                
+                # Set common style properties
+                if hasattr(style, 'hidden'):
+                    style.hidden = style_config.get("hidden", False)
+                if hasattr(style, 'unhide_when_used'):
+                    style.unhide_when_used = style_config.get("unhide_when_used", True)
+                if hasattr(style, 'quick_style'):
+                    style.quick_style = style_config.get("quick_style", True)
+                
+                # Special handling for heading levels: ALWAYS enforce outline level
+                if (style_name.startswith("Heading") and " " in style_name) or style_name == "Appendices Title":
+                    try:
+                        level = int(style_name.split(' ')[1]) if "Heading" in style_name else 1
+                        # Force creation of pPr if needed and set outline level
+                        if hasattr(style.paragraph_format, 'outline_level'):
+                            style.paragraph_format.outline_level = level - 1
+                        
+                        # Fallback/Redundancy: Set it directly on new styles or if above failed
+                        # This catches cases where creation didn't fully set properties
+                        pPr = style._element.get_or_add_pPr()
+                        outlineLvl = pPr.find(qn('w:outlineLvl'))
+                        if outlineLvl is None:
+                            outlineLvl = OxmlElement('w:outlineLvl')
+                            pPr.append(outlineLvl)
+                        outlineLvl.set(qn('w:val'), str(level - 1))
+                        
+                    except (ValueError, IndexError, AttributeError) as e:
+                        print(f"Warning: Failed to set outline level for {style_name}: {e}")
+                        pass
+                
+                # Set next style if specified
+                if "next_style" in style_config and style_config["next_style"] in doc_styles:
+                    style.next_paragraph_style = doc_styles[style_config["next_style"]]
+                
+                # Enforce no borders for academic styles (removes theme artifacts)
+                self._remove_borders(style)
+
+
+
+                # # CRITICAL Fix: Clear built-in font name (rFonts) from the STYLE itself
+                # # This ensures "Heading 1" doesn't inherit Theme Fonts (e.g., Calibri)
+                # if style._element.rPr is not None:
+                #     rFonts = style._element.rPr.find(qn('w:rFonts'))
+                #     if rFonts is not None:
+                #         style._element.rPr.remove(rFonts)
+
+            except Exception as e:
+                print(f"Warning: Could not apply style '{style_name}': {str(e)}")
+                continue
+
+    def _remove_borders(self, style):
+        """Removes all borders (bottom, top, left, right) from a paragraph style."""
+        # Access the pPr (paragraph properties) element
+        pPr = style._element.get_or_add_pPr()
+        
+        # Check for existing pBdr (paragraph borders) element
+        pBdr = pPr.find(qn('w:pBdr'))
+        
+        # If it exists, remove it to clear all borders
+        if pBdr is not None:
+            pPr.remove(pBdr)
+
+    def _apply_margins(self, doc):
+        section = doc.sections[0]
+        margin_map = {
+            "left": "left_margin", "right": "right_margin",
+            "top": "top_margin", "bottom": "bottom_margin",
+            "header": "header_distance", "footer": "footer_distance",
+            "gutter": "gutter"
+        }
+        for key, value in self.selected_style_guide["margins"].items():
+            if key in margin_map:
+                setattr(section, margin_map[key], value)
+
+    def _format_tables(self, doc):
+        """
+        Format all tables in the document.
+        Ensures cells use the 'Table Content' style (or a 0-indent equivalent)
+        to prevent text cutoff caused by the 'Normal' style's indent.
+        """
+        if "Table Content" not in doc.styles:
+            return
+
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        # Avoid overwriting Heading styles if they exist in tables (rare but possible)
+                        if paragraph.style.name.startswith("Heading"):
+                             continue
+                        
+                        # Apply Table Content style
+                        paragraph.style = doc.styles["Table Content"]
+
+    def _remove_leading_whitespace(self, doc):
+        """Remove leading whitespace (spaces, tabs) from the beginning of paragraphs."""
+        for paragraph in doc.paragraphs:
+            found_content = False
+            for run in paragraph.runs:
+                if found_content:
+                    break
+                
+                text = run.text
+                if not text:
+                    continue
+                
+                if text.strip() == "":
+                    # It's all whitespace (and we haven't found content yet), so clear it
+                    run.text = ""
+                else:
+                    # It has some content. Strip the leading whitespace.
+                    # This marks the start of content.
+                    run.text = text.lstrip()
+                    found_content = True
+
+    def _clear_run_formatting(self, doc):
+        """Clear old run formatting (character styles, fonts, colors, effects) from all paragraphs (body and tables)."""
+        
+        def clear_para_runs(paragraph):
+            """Helper to clear runs in a single paragraph."""
+            for run in paragraph.runs:
+                # 1. Clear direct properties via python-docx
+                run.bold = None
+                run.italic = None
+                run.underline = None
+                
+                if hasattr(run, 'font'):
+                    run.font.name = None
+                    run.font.size = None
+                    try:
+                        if run.font.color:
+                            run.font.color.rgb = None
+                    except (ValueError, AttributeError):
+                        pass
+
+                # # 2. Robust XML Clearing: Remove persistent styling (rStyle, Color, Caps, etc.)
+                # rPr = run._element.rPr
+                # if rPr is not None:
+                #     # Tags to remove to ensure a completely clean slate
+                #     tags_to_remove = [
+                #         'w:rStyle',      # Character Style
+                #     ]
+                    
+                #     for tag in tags_to_remove:
+                #         element = rPr.find(qn(tag))
+                #         if element is not None:
+                #             rPr.remove(element)
+
+        # Clear Body Paragraphs
+        for paragraph in doc.paragraphs:
+            clear_para_runs(paragraph)
+            
+        # Clear Table Paragraphs
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        clear_para_runs(paragraph)
+
+    def _detect_paragraph_types(self, paragraphs):
+        system_prompt, user_prompt = DocumentStructureManager.create_detection_prompt(paragraphs, self.english_variant)
+        
+        max_retries = 3
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                full_text, usage_stats = self.ai_client.detect_structure(system_prompt, user_prompt)
+                
+                # Validate response before parsing
+                if not full_text:
+                    raise ValueError("API returned an empty response. Please try again.")
+                
+                return DocumentStructureManager.parse_and_validate_response(full_text), usage_stats
+
+            except (json.JSONDecodeError, ValueError) as e:
+                retry_count += 1
+                error_msg = f"JSON Parsing Error: {str(e)}"
+                print(f"ERROR: {error_msg}")
+                
+                if retry_count < max_retries:
+                    wait_time = 2 * retry_count
+                    print(f"⚠️ Parsing failed. Retrying in {wait_time}s (Attempt {retry_count}/{max_retries})...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"Response parsing failed. The API response may be incomplete or malformed.")
+                    raise ValueError(error_msg) from e
+            except Exception as e:
+                error_msg = f"API Request Error: {str(e)}"
+                print(f"ERROR: {error_msg}")
+                traceback.print_exc()
+                raise ValueError(error_msg) from e
+
+    def _detect_and_manage_title_page(self, doc, doc_structure):
+        """
+        No-op for Linear Block Schema.
+        Returns False, 0 to treat everything as standard blocks.
+        """
+        return False, 0
+
+    def _join_headings(self, doc, doc_structure):
+        """
+        Joins "CHAPTER X" and following title into a single paragraph.
+        Modifies both doc and doc_structure.
+        """
+        blocks = doc_structure.get("blocks", [])
+        if not blocks:
+            return
+
+        i = 0
+        while i < len(blocks):
+            block1 = blocks[i]
+            content1 = block1.get("content", "").strip()
+            type1 = block1.get("type", "")
+            
+            # Condition: First block is Heading 1 and starts with "CHAPTER"
+            if type1 == "heading_1" and content1.upper().startswith("CHAPTER") and len(content1) < 20: 
+                
+                # Look ahead for the next content block
+                next_content_idx = -1
+                for j in range(i + 1, len(blocks)):
+                    if blocks[j].get("content", "").strip():
+                        next_content_idx = j
+                        break
+                
+                if next_content_idx != -1:
+                    block2 = blocks[next_content_idx]
+                    content2 = block2.get("content", "").strip()
+                    type2 = block2.get("type", "")
+                    
+                    # Merge condition: Next real content is Heading 1 or Heading 2
+                    if type2 in ["heading_1"]:
+                        # Attempt to find these in the document
+                        p1 = None
+                        p2 = None
+                        
+                        # We need to find them and ensure they are adjacent or close
+                        # Scanning doc.paragraphs
+                        for idx, p in enumerate(doc.paragraphs):
+                            if p.text.strip() == content1:
+                                p1 = p
+                                # Check the next few paragraphs for content2 (ignore empty)
+                                for offset in range(1, 10): # Widened search range
+                                    if idx + offset < len(doc.paragraphs):
+                                        next_p = doc.paragraphs[idx + offset]
+                                        if next_p.text.strip() == content2:
+                                            p2 = next_p
+                                            break
+                                        # Allow ignoring empty paragraphs between them
+                                        if next_p.text.strip(): 
+                                            break 
+                                if p2:
+                                    break
+                        
+                        if p1 and p2:
+                            # Merge
+                            separator = ": "
+                            if content1[-1] in ":.-":
+                                 separator = " "
+                            
+                            merged_text = content1 + separator + content2
+                            p1.text = merged_text
+                            
+                            # Remove p2
+                            p_element = p2._element
+                            if p_element.getparent() is not None:
+                                p_element.getparent().remove(p_element)
+                            
+                            # Update doc_structure
+                            block1['content'] = merged_text
+                            
+                            # Remove block2 logic from structure
+                            blocks.pop(next_content_idx)
+                            
+                            print(f"Merged headings: '{merged_text}'")
+                            continue
+            
+            i += 1
+
+    def _format_content_in_place(self, doc, doc_structure, has_title_page, title_page_boundary):
+        """Format document content based on AI-detected structure."""
+        style_map = {}
+
+        # --- Build style_map from Linear Block Schema ---
+        for block in doc_structure.get("blocks", []):
+            content = block.get("content", "").strip()
+            block_type = block.get("type", "Normal")
+            # Handle list_id
+            list_id = block.get("list_id")
+            if list_id is None:
+                list_id = block.get("attributes", {}).get("list_id")
+
+            if content:
+                style_map[content] = (STYLE_MAPPINGS.get(block_type, "Normal"), list_id)
+
+
+        # --- Step 2: Iterate through existing paragraphs and apply styles ---
+        # Create a list of (paragraph_object, original_text_stripped) tuples
+        paragraphs_and_text = [(p, p.text.strip()) for p in doc.paragraphs]
+        
+        i = 0
+        while i < len(paragraphs_and_text):
+            p, current_text_stripped = paragraphs_and_text[i]
+
+            if not current_text_stripped:
+                i += 1
+                continue # Skip empty paragraphs
+
+            applied_style = False
+            
+            # 1. Check for exact matches
+            if current_text_stripped in style_map:
+                target_style_name, target_list_id = style_map[current_text_stripped]
+                
+                if target_style_name in doc.styles:
+                    p.style = doc.styles[target_style_name]
+                    applied_style = True
+                else:
+                    # Fallback for styles like "List Bullet" -> "List Bullet 1"
+                    fallback_found = False
+                    for suffix in [" 1", "1", " 2", "2"]:
+                        variant_name = f"{target_style_name}{suffix}"
+                        if variant_name in doc.styles:
+                            p.style = doc.styles[variant_name]
+                            target_style_name = variant_name
+                            applied_style = True
+                            fallback_found = True
+                            print(f"Style '{target_style_name}' not found. Using variant '{variant_name}'.")
+                            break
+                    
+                    if not fallback_found:
+                        print(f"Warning: Required style '{target_style_name}' not found. Falling back to Normal.")
+                        p.style = doc.styles["Normal"]
+                        applied_style = True
+
+                if applied_style and target_style_name != "Normal":
+                    if target_list_id is not None:
+                        try:
+                            p.list_id = target_list_id
+                        except:
+                            pass
+                    else:
+                        # FIX: Explicitly remove list formatting (numPr) if we are switching to a non-list style
+                        if p._element.pPr is not None and not (target_style_name.startswith("Heading") or "Appendix" in target_style_name): 
+                            numPr = p._element.pPr.find(qn('w:numPr'))
+                            if numPr is not None:
+                                p._element.pPr.remove(numPr)
+                
+
+            # 2. Check for common section titles
+            # Removed redundant hardcoded checks. We rely on the AI structure detection.
+
+            # 3. Handle potential splits
+            if not applied_style:
+                potential_split_info = None
+                for mapped_text, (mapped_style, mapped_list_id) in style_map.items():
+                    if mapped_text and current_text_stripped.startswith(mapped_text) and len(current_text_stripped) > len(mapped_text):
+                        remaining_part_raw = current_text_stripped[len(mapped_text):]
+                        if remaining_part_raw.strip():
+                            potential_split_info = (mapped_text, mapped_style, mapped_list_id)
+                            break
+                
+                if potential_split_info:
+                    mapped_text, mapped_style, mapped_list_id = potential_split_info
+                    
+                    split_offset = len(mapped_text)
+                    
+                    new_para = self._split_paragraph_at_offset(p, split_offset)
+                    
+                    if new_para is not None:
+                        if mapped_style in doc.styles:
+                            new_para.style = doc.styles[mapped_style]
+                        else:
+                            new_para.style = doc.styles["Normal"]
+                            
+                        if mapped_list_id is not None:
+                            try:
+                                new_para.list_id = mapped_list_id
+                            except:
+                                pass
+
+                        p.style = doc.styles["Normal"]
+                        if p._element.pPr is not None and not (mapped_style.startswith("Heading") or "Appendix" in mapped_style): 
+                             numPr = p._element.pPr.find(qn('w:numPr'))
+                             if numPr is not None:
+                                 p._element.pPr.remove(numPr)
+                        
+                        # Strip leading whitespace from the Tail (p)
+                        found_content = False
+                        for run in p.runs:
+                            if found_content:
+                                break
+                            text = run.text
+                            if not text:
+                                continue
+                            if text.strip() == "":
+                                run.text = ""
+                            else:
+                                run.text = text.lstrip()
+                                found_content = True
+                        
+                        remaining_text = p.text.strip()
+                        paragraphs_and_text[i] = (new_para, mapped_text)
+                        paragraphs_and_text.insert(i + 1, (p, remaining_text))
+                        
+                        print(f"Split paragraph: '{mapped_text}' | '{remaining_text}'")
+                        applied_style = True
+
+            i += 1
+
+    def _split_paragraph_at_offset(self, paragraph, offset: int):
+        """
+        Split a paragraph at the specified character offset, preserving formatting.
+        Returns the NEW paragraph (which contains content BEFORE the offset).
+        The original paragraph retains content AFTER the offset.
+        """
+        if offset < 0:
+            raise ValueError("Offset cannot be negative")
+            
+        full_text = paragraph.text
+        if offset == 0:
+            # Everything stays in original. Create empty new para before? 
+            # Or effectively no split for 'before' content.
+            # But the caller expects a new paragraph for the "Prefix".
+            # If prefix is empty, maybe return None?
+            # But for our specific use case (Heading split), offset will be > 0.
+            return None
+            
+        if offset >= len(full_text):
+            # Everything moves to new para. Original becomes empty?
+            # We'll handle this standard logic.
+            pass
+
+        # We need to find exactly where to cut in the runs
+        current_pos = 0
+        split_run_index = -1
+        split_in_run_offset = 0
+        
+        # 1. Identify which run contains the split point
+        for idx, run in enumerate(paragraph.runs):
+            run_len = len(run.text)
+            if current_pos <= offset < current_pos + run_len:
+                split_run_index = idx
+                split_in_run_offset = offset - current_pos
+                break
+            current_pos += run_len
+            
+        if split_run_index == -1 and offset == len(full_text):
+            # Split is at the very end
+            split_run_index = len(paragraph.runs)
+            split_in_run_offset = 0
+        elif split_run_index == -1:
+            # Should not happen if offset is valid
+            return None
+
+        # 2. Create the new paragraph BEFORE the current one
+        new_paragraph = paragraph.insert_paragraph_before('')
+        
+        # 3. Move runs
+        # We process runs in the original paragraph.
+        # Runs BEFORE split_run_index: Move fully to new_paragraph
+        # Run AT split_run_index: Split. First part to new, second stay (or re-add).
+        # Runs AFTER split_run_index: Stay in original.
+        
+        # Careful: Modifying the list of runs while iterating or by index can be tricky 
+        # because paragraph.runs is a dynamic property in python-docx.
+        # Safer to collect what needs to be moved/changed, then apply.
+        
+        # Actually, standard python-docx `paragraph.runs` returns a list of proxy objects. 
+        # Modifying the XML is the source of truth.
+        
+        # Strategy:
+        # A. Copy content/formatting to new_paragraph for everything < offset
+        # B. Remove that content from original paragraph
+        
+        runs_to_move = []
+        split_run = None
+        
+        # We iterate a copy to be safe, though we aren't modifying *yet*
+        all_runs = list(paragraph.runs)
+        
+        for i, run in enumerate(all_runs):
+            if i < split_run_index:
+                # Fully move
+                new_run = new_paragraph.add_run(run.text)
+                self._copy_run_formatting(run, new_run)
+                # clear original
+                run.text = ""
+            elif i == split_run_index:
+                # Split this run
+                original_text = run.text
+                text_before = original_text[:split_in_run_offset]
+                text_after = original_text[split_in_run_offset:]
+                
+                if text_before:
+                    new_run = new_paragraph.add_run(text_before)
+                    self._copy_run_formatting(run, new_run)
+                
+                # Update original run to only have the 'after' text
+                run.text = text_after
+                
+            else:
+                # i > split_run_index
+                # These stay in original. Do nothing.
+                pass
+                
+        # Clean up empty runs in original? python-docx doesn't auto-delete empty runs usually, 
+        # but visually it's fine. We can leave them or explicitly remove XML.
+        # For robustness, let's leave them unless they cause issues.
+        
+        return new_paragraph
+        
+    def _copy_run_formatting(self, source_run, target_run):
+        """Copy formatting from source_run to target_run."""
+        if not source_run or not target_run:
+            return
+            
+        target_run.bold = source_run.bold
+        target_run.italic = source_run.italic
+        target_run.underline = source_run.underline
+        
+        if not hasattr(source_run, 'font') or not hasattr(target_run, 'font'):
+            return
+            
+        source_font = source_run.font
+        target_font = target_run.font
+        
+        if hasattr(source_font, 'name'):
+            target_font.name = source_font.name
+        if hasattr(source_font, 'size'):
+            target_font.size = source_font.size
+            
+        if hasattr(source_font, 'color') and source_font.color and source_font.color.rgb:
+            if not hasattr(target_font, 'color'):
+                target_font.color.rgb = source_font.color.rgb
+            else:
+                target_font.color.rgb = source_font.color.rgb
+                
+        font_properties = [
+            'highlight_color', 'subscript', 'superscript', 'strike',
+            'double_strike', 'shadow', 'outline', 'rtl', 'imprint',
+            'cs_bold', 'complex_script', 'hidden'
+        ]
+        
+        for prop in font_properties:
+            if hasattr(source_font, prop):
+                try:
+                    setattr(target_font, prop, getattr(source_font, prop))
+                except (AttributeError, KeyError):
+                    continue
+
+    def _format_references(self, doc, doc_structure):
+        """
+        Central method for handling all reference formatting operations.
+        """
+        ai_references = [
+            block for block in doc_structure.get("blocks", []) 
+            if block.get("type") == "reference_list_item"
+        ]
+        
+        if not ai_references:
+            return
+        
+        reference_texts = []
+        for ref_entry in ai_references:
+            content = ref_entry.get("content", "").strip()
+            if content:
+                reference_texts.append(content)
+        
+        if not reference_texts:
+            return
+        
+        reference_paragraphs = []
+        text_to_paragraph = {}
+        
+        for p in doc.paragraphs:
+            text = p.text.strip()
+            if text:
+                text_to_paragraph[text] = p
+        
+        for ref_text in reference_texts:
+            if ref_text in text_to_paragraph:
+                reference_paragraphs.append(text_to_paragraph[ref_text])
+        
+        if not reference_paragraphs:
+            return
+        
+        if len(reference_paragraphs) >= 2:
+            def sort_key(p):
+                text = p.text.strip()
+                cleaned_text = re.sub(r'^\s*[\(\[]?\d+[\)\]]?\.\?\s*', '', text)
+                return cleaned_text.lower()
+
+            sorted_paragraphs = sorted(reference_paragraphs, key=sort_key)
+            
+            if reference_paragraphs != sorted_paragraphs:
+                sorted_texts = [p.text for p in sorted_paragraphs]
+                for i, p in enumerate(reference_paragraphs):
+                    p.text = sorted_texts[i]
+
+        style_config = self.selected_style_guide["styles"].get("References", {})
+        
+        for paragraph in reference_paragraphs:
+            paragraph.style = doc.styles["References"]
+            
+            if "paragraph" in style_config:
+                para_config = style_config["paragraph"]
+                para_format = paragraph.paragraph_format
+                
+                if "left_indent" in para_config:
+                    para_format.left_indent = para_config["left_indent"]
+                if "first_line_indent" in para_config:
+                    para_format.first_line_indent = para_config["first_line_indent"]
+                
+                if "space_before" in para_config:
+                    para_format.space_before = para_config["space_before"]
+                if "space_after" in para_config:
+                    para_format.space_after = para_config["space_after"]
+                if "line_spacing" in para_config:
+                    para_format.line_spacing_rule = para_config["line_spacing"]
+
+        # Removed regex-based inline formatting to prevent text corruption as requested.
+        # Only paragraph-level styles and sorting are now applied to references.
+
+    def _apply_font_properties(self, doc):
+        """
+        Explicitly applies required font properties (name, color, bold, size) to runs
+        within paragraphs belonging to a specific set of target styles,
+        overcoming python-docx's style application inconsistencies.
+        """
+        styles_config = self.selected_style_guide["styles"]
+        
+        # Define the set of styles that require this explicit fix (based on the original code)
+        target_style_names = {
+            'Normal', 'Abstract', 'Title', 'Appendix Title',
+            'Appendices Title', 'List Bullet', 'List Number', 'List Item',
+            'Abstract Heading', 'Acknowledgement Heading', 'Acknowledgement Body',
+            'Dedication Heading', 'Dedication Body', 'Preface Heading',
+            'Preface Body', 'References Heading'
+        }
+
+        for paragraph in doc.paragraphs:
+            style_name = paragraph.style.name
+            
+            # 1. Check if the paragraph's style is one of the designated targets
+            if style_name in target_style_names:
+                
+                # 2. Retrieve the font configuration for the applied style
+                style_config = styles_config.get(style_name)
+                
+                if style_config and "font" in style_config:
+                    font_config = style_config["font"]
+                    
+                    # 3. Iterate over all runs in the paragraph to apply fixes
+                    for run in paragraph.runs:
+                        
+                        # --- Apply Mandatory Font Properties (Name, Color, Bold) ---
+                        # These are applied universally to all target styles
+                        if "name" in font_config:
+                            run.font.name = font_config["name"]
+                        
+                        if "color" in font_config:
+                            run.font.color.rgb = font_config["color"]
+                            
+                        if "bold" in font_config:
+                            run.font.bold = font_config["bold"]
+                        
+                        
+                        # --- Apply Conditional Font Property (Size) ---
+                        # Only apply size if the style is 'Normal', 'Abstract', or new granular styles
+                        # mirroring the original logic's size constraint.
+                        if style_name in {
+                            'Normal', 'Abstract', 'Abstract Heading', 
+                            'Acknowledgement Heading', 'Acknowledgement Body',
+                            'Dedication Heading', 'Dedication Body', 'Preface Heading',
+                            'Preface Body', 'References Heading'
+                        } and "size" in font_config:
+                            run.font.size = font_config["size"]
+
+    def _apply_explicit_paragraph_properties(self, doc):
+        """
+        Explicitly applies all essential paragraph formatting properties (spacing, 
+        indentation, alignment, and keep options) from the style guide to each 
+        paragraph's format object to ensure consistency and overcome python-docx limitations.
+        """
+        styles_config = self.selected_style_guide["styles"]
+        
+        # Check if "Appendices Title" (the master heading) exists in the document
+        has_master_appendices = any(p.style.name == "Appendices Title" for p in doc.paragraphs)
+
+        for paragraph in doc.paragraphs:
+            style_name = paragraph.style.name
+            
+            # Normalize and handle known markdown-style paragraphs
+            if isinstance(style_name, str) and style_name.lower() == 'ds-markdown-paragraph':
+                # Convert to Normal style if available so paragraph-level properties are applied
+                if 'Normal' in doc.styles:
+                    try:
+                        paragraph.style = doc.styles['Normal']
+                        style_name = 'Normal'
+                        print(f"Converted ds-markdown-paragraph to 'Normal' for paragraph: '{paragraph.text[:60]}...'")
+                    except Exception:
+                        # If conversion fails, fall back to original style_name
+                        pass
+            
+            # Retrieve the configuration for the paragraph's style
+            if style_name not in styles_config:
+                continue
+                
+            style_config = styles_config[style_name]
+            if not style_config or "paragraph" not in style_config:
+                continue
+                
+            para_config = style_config["paragraph"]
+            para_format = paragraph.paragraph_format
+            
+            # --- Apply Indentation and Alignment Properties ---
+            if "alignment" in para_config:
+                alignment = para_config["alignment"]
+                
+                # Dynamic alignment for Appendix Title: Left-align if master "Appendices Title" is present
+                if style_name == "Appendix Title" and has_master_appendices:
+                    alignment = WD_ALIGN_PARAGRAPH.LEFT
+                    
+                para_format.alignment = alignment
+            if "left_indent" in para_config:
+                para_format.left_indent = para_config["left_indent"]
+            if "right_indent" in para_config:
+                para_format.right_indent = para_config["right_indent"]
+            if "first_line_indent" in para_config:
+                para_format.first_line_indent = para_config["first_line_indent"]
+            
+            # Remove existing XML-level spacing to ensure a clean slate
+            pPr = paragraph._p.get_or_add_pPr()
+            spacing_elem = pPr.find(qn('w:spacing'))
+            if spacing_elem is not None:
+                pPr.remove(spacing_elem)
+
+            if "space_before" in para_config:
+                para_format.space_before = para_config["space_before"]
+            if "space_after" in para_config:
+                para_format.space_after = para_config["space_after"]
+            if "line_spacing" in para_config:
+                para_format.line_spacing = para_config["line_spacing"]
+
+            # --- Apply Flow Control Properties ---
+            if "keep_together" in para_config:
+                para_format.keep_together = para_config["keep_together"]
+            if "keep_with_next" in para_config:
+                para_format.keep_with_next = para_config["keep_with_next"]
+            if "page_break_before" in para_config:
+                para_format.page_break_before = para_config["page_break_before"]
+                
+            # --- Apply Widow/Orphan Control ---
+            if "widow_control" in para_config:
+                para_format.widow_control = para_config["widow_control"]
+            if "orphan_control" in para_config:
+                try:
+                    para_format.orphan_control = para_config["orphan_control"]
+                except AttributeError:
+                    # orphan_control may not be available in all python-docx versions
+                    pass
+            
+            # --- Apply Outline Level ---
+            if "outline_level" in para_config:
+                try:
+                    outline_level = para_config["outline_level"]
+                    
+                    # Demote outline level if master "Appendices Title" is present (Appendix Title becomes Level 1)
+                    if style_name == "Appendix Title" and has_master_appendices:
+                        outline_level = 1
+                        
+                    para_format.outline_level = outline_level
+                except AttributeError:
+                    # outline_level may not be available in all python-docx versions
+                    pass
+
+
+    def _create_abstract_num(self, doc, format_type, lvl_text):
+        """Create abstractNum element for list format."""
+        numbering_part = doc.part.numbering_part
+        
+        # Find next ID
+        next_id = max([int(a.get(qn('w:abstractNumId'))) 
+                       for a in numbering_part.element.findall(qn('w:abstractNum'))], default=0) + 1
+        
+        # Create abstractNum
+        abstract = OxmlElement('w:abstractNum')
+        abstract.set(qn('w:abstractNumId'), str(next_id))
+        
+        # Create level 0
+        lvl = OxmlElement('w:lvl')
+        lvl.set(qn('w:ilvl'), '0')
+        
+        start = OxmlElement('w:start')
+        start.set(qn('w:val'), '1')
+        lvl.append(start)
+        
+        fmt = OxmlElement('w:numFmt')
+        fmt.set(qn('w:val'), format_type)
+        lvl.append(fmt)
+        
+        text = OxmlElement('w:lvlText')
+        text.set(qn('w:val'), lvl_text)
+        lvl.append(text)
+        
+        # Add font properties for bullets
+        if format_type == 'bullet':
+            rPr = OxmlElement('w:rPr')
+            rFonts = OxmlElement('w:rFonts')
+            rFonts.set(qn('w:ascii'), 'Symbol')
+            rFonts.set(qn('w:hAnsi'), 'Symbol')
+            rFonts.set(qn('w:hint'), 'default')
+            rPr.append(rFonts)
+            lvl.append(rPr)
+            
+            # Add explicit indentation for bullets at the numbering level
+            lvl_pPr = OxmlElement('w:pPr')
+            ind = OxmlElement('w:ind')
+            ind.set(qn('w:left'), '360')
+            ind.set(qn('w:hanging'), '360')
+            lvl_pPr.append(ind)
+            lvl.append(lvl_pPr)
+
+        abstract.append(lvl)
+        numbering_part.element.insert(0, abstract)
+        
+        return next_id
+
+    def _apply_list_properties(self, doc):
+        """
+        Apply list (bullet/numbered/alphabet) properties and handle list restart logic.
+        """
+        styles_config = self.selected_style_guide["styles"]
+        numbering_part = doc.part.numbering_part
+        if numbering_part is None:
+            # If document has no numbering part, some formatting might fail,
+            # but we can try to continue or skip.
+            return
+        
+        # Create num instances for alphabet lists
+        def create_num(abstract_id):
+            next_num_id = max([int(n.get(qn('w:numId'))) 
+                              for n in numbering_part.element.findall(qn('w:num'))], default=5000) + 1
+            num = OxmlElement('w:num')
+            num.set(qn('w:numId'), str(next_num_id))
+            abstract_ref = OxmlElement('w:abstractNumId')
+            abstract_ref.set(qn('w:val'), str(abstract_id))
+            num.append(abstract_ref)
+            numbering_part.element.append(num)
+            return next_num_id
+
+        list_id_map = {} 
+        
+        next_decimal_id = 5000 
+        next_alphabet_id = 7000
+
+        previous_style = None
+        
+        last_used_decimal_id = next_decimal_id
+        last_used_alphabet_id = next_alphabet_id
+        last_used_bullet_id = None
+
+        for paragraph in doc.paragraphs:
+            style_name = paragraph.style.name
+            
+            is_list_item = style_name in {"List Bullet", "List Number", "List Item", "List Alphabet"}
+            ai_list_id = paragraph.list_id if hasattr(paragraph, 'list_id') else None
+
+            if not is_list_item:
+                previous_style = style_name
+                continue
+
+            numbering_type = None
+            target_num_id = None
+
+            if style_name == "List Number":
+                numbering_type = 'decimal'
+                
+                if ai_list_id is not None:
+                     if ai_list_id in list_id_map:
+                         target_num_id = list_id_map[ai_list_id]
+                     else:
+                         next_decimal_id += 1
+                         target_num_id = next_decimal_id
+                         list_id_map[ai_list_id] = target_num_id
+                else:
+                    should_restart = (previous_style != style_name)
+                    if should_restart:
+                        next_decimal_id += 1
+                        target_num_id = next_decimal_id
+                        last_used_decimal_id = target_num_id
+                    else:
+                        target_num_id = last_used_decimal_id
+
+            elif style_name == "List Alphabet":
+                numbering_type = 'lowerLetter'
+                
+                if ai_list_id is not None:
+                     if ai_list_id in list_id_map:
+                         target_num_id = list_id_map[ai_list_id]
+                     else:
+                         new_abstract_id = self._create_abstract_num(doc, 'lowerLetter', '%1)')
+                         target_num_id = create_num(new_abstract_id)
+                         list_id_map[ai_list_id] = target_num_id
+                else:
+                    should_restart = (previous_style != style_name)
+                    if should_restart:
+                        new_abstract_id = self._create_abstract_num(doc, 'lowerLetter', '%1)')
+                        target_num_id = create_num(new_abstract_id)
+                        last_used_alphabet_id = target_num_id
+                    else:
+                        target_num_id = last_used_alphabet_id
+
+            elif style_name == "List Bullet":
+                numbering_type = 'bullet'
+                if ai_list_id is not None:
+                     if ai_list_id in list_id_map:
+                         target_num_id = list_id_map[ai_list_id]
+                     else:
+                         new_abstract_id = self._create_abstract_num(doc, 'bullet', '\uf0b7')
+                         target_num_id = create_num(new_abstract_id)
+                         list_id_map[ai_list_id] = target_num_id
+                else:
+                    if last_used_bullet_id is None or (previous_style != style_name):
+                        new_abstract_id = self._create_abstract_num(doc, 'bullet', '\uf0b7')
+                        target_num_id = create_num(new_abstract_id)
+                        last_used_bullet_id = target_num_id
+                    else:
+                        target_num_id = last_used_bullet_id
+
+            previous_style = style_name
+
+            if style_name not in styles_config:
+                continue
+
+            p = paragraph._p
+            
+            if (numbering_type in {'decimal', 'lowerLetter', 'bullet'}) and target_num_id is not None:
+                pPr = p.get_or_add_pPr()
+                numPr = pPr.find(qn('w:numPr'))
+                if numPr is None:
+                    numPr = OxmlElement('w:numPr')
+                    pPr.append(numPr)
+
+                ilvl = numPr.find(qn('w:ilvl'))
+                if ilvl is None:
+                    ilvl = OxmlElement('w:ilvl')
+                    numPr.append(ilvl)
+                ilvl.set(qn('w:val'), '0')
+
+                numId = numPr.find(qn('w:numId'))
+                if numId is None:
+                    numId = OxmlElement('w:numId')
+                    numPr.append(numId)
+                numId.set(qn('w:val'), str(target_num_id))
+
+            for run in paragraph.runs:
+                run.font.color.rgb = RGBColor(0, 0, 0)
+
+    def _ensure_numbering_part(self, doc):
+        try:
+            numbering = doc.part.numbering_part
+            return numbering
+        except Exception:
+            return None
+    
+    def _apply_heading_styles(self, doc):
+            """Apply heading styles based on the style guide."""
+            for paragraph in doc.paragraphs:
+                if paragraph.style.name.startswith('Heading') or paragraph.style.name in {'Appendix Title', 'Appendices Title'}:
+                    style_name = paragraph.style.name
+                    if style_name.startswith('Heading'):
+                        heading_level = int(style_name.split(' ')[1])
+                        target_style_key = f"Heading {heading_level}"
+                    else:
+                        target_style_key = style_name
+
+                    font_config = STYLE_GUIDES[self.selected_style_name]['styles'][target_style_key]['font']
+
+                    for run in paragraph.runs:
+                        run.font.name = font_config['name']
+                        run.font.size = font_config['size']
+                        run.font.bold = font_config.get('bold')
+                        run.font.italic = font_config.get('italic')
+                        run.font.color.rgb = font_config.get('color')
+                        run.font.underline = font_config.get('underline')
+                        # run.font.space_before = font_config.get('space_before') # python-docx run font doesn't have space_before
+                        # run.font.space_after = font_config.get('space_after') # python-docx run font doesn't have space_after
+
+    def _remove_blank_lines(self, doc, boundary_idx=0):
+        """Remove empty paragraphs after the boundary index."""
+        to_remove = [p for p in doc.paragraphs[boundary_idx:] 
+                     if not p.text.strip() and not p.runs]
+        
+        for p in reversed(to_remove):
+            try:
+                p._element.getparent().remove(p._element)
+            except Exception:
+                pass
