@@ -6,7 +6,7 @@ import logging
 from typing import List, Optional
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO) # Removed to avoid overriding global config
 logger = logging.getLogger(__name__)
 
 class APIKeyManager:

@@ -16,7 +16,7 @@ from docx.oxml.shared import OxmlElement
 from docx.shared import Inches, Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.enum.style import WD_STYLE_TYPE
-from style_guides import STYLE_GUIDES
+from .style_guides import STYLE_GUIDES
 from core.api_clients import AIClient
 from core.constants import STYLE_MAPPINGS
 from utils.spacing import remove_all_spacing
@@ -267,12 +267,8 @@ class AdvancedFormatter:
         return doc.styles[style_name]
 
     def _log_stats(self, input_path, duration, usage_stats):
-        """Log formatting stats to CSV."""
-        log_file = "formatting_stats.csv"
-        file_exists = os.path.isfile(log_file)
-        
+        """Log formatting stats to console."""
         # Usage stats object attributes depend on the client implementation
-        # For OpenAI/HuggingFace it's an object, for Gemini it might be None or different
         prompt_tokens = 0
         completion_tokens = 0
         total_tokens = 0
@@ -283,29 +279,12 @@ class AdvancedFormatter:
                  completion_tokens = usage_stats.completion_tokens
                  total_tokens = usage_stats.total_tokens
         
-        try:
-            with open(log_file, mode='a', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
-                if not file_exists:
-                    writer.writerow(['Timestamp', 'Input File', 'Duration (s)', 'Prompt Tokens', 'Completion Tokens', 'Total Tokens'])
-                
-                writer.writerow([
-                    datetime.now().isoformat(),
-                    os.path.basename(input_path),
-                    f"{duration:.2f}",
-                    prompt_tokens,
-                    completion_tokens,
-                    total_tokens
-                ])
-            print(f"\n📊 Stats recorded to {log_file}")
-            print("-" * 30)
-            print(f"⏱️  Duration:      {duration:.2f}s")
-            print(f"🔢 Total Tokens:  {total_tokens}")
-            print(f"   • Prompt:      {prompt_tokens}")
-            print(f"   • Completion:  {completion_tokens}")
-            print("-" * 30)
-        except Exception as e:
-            print(f"Warning: Failed to log stats: {e}")
+        print("-" * 30)
+        print(f"⏱️  Duration:      {duration:.2f}s")
+        print(f"🔢 Total Tokens:  {total_tokens}")
+        print(f"   • Prompt:      {prompt_tokens}")
+        print(f"   • Completion:  {completion_tokens}")
+        print("-" * 30)
 
     def format_document(self, input_path, output_path, doc=None):
         if doc is None:

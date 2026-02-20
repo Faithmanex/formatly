@@ -10,14 +10,11 @@ import time
 from typing import List, Dict, Tuple, Optional, Any
 import google.generativeai as genai
 from pathlib import Path
-from dotenv import load_dotenv
 import uuid
 import tempfile
+import logging
 
-# Load environment variables
-load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = os.getenv("GEMINI_MODEL")
+logger = logging.getLogger(__name__)
 
 class BatchProcessor:
     """
@@ -25,7 +22,7 @@ class BatchProcessor:
     Provides methods for creating, monitoring, and retrieving batch jobs.
     """
     
-    def __init__(self, api_key: str = API_KEY, model_name: str = MODEL_NAME):
+    def __init__(self, api_key: str = None, model_name: str = None):
         """
         Initialize the batch processor with API credentials.
         
@@ -33,8 +30,8 @@ class BatchProcessor:
             api_key: Gemini API key (default: from environment)
             model_name: Gemini model to use (default: from environment)
         """
-        self.api_key = api_key
-        self.model_name = model_name
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.model_name = model_name or os.getenv("GEMINI_MODEL")
         self.client = None
         self.temp_dir = None
         
@@ -49,7 +46,7 @@ class BatchProcessor:
         try:
             genai.configure(api_key=self.api_key)
             self.client = genai.Client()
-            print(f"Initialized Gemini client for Batch processing with model: {self.model_name}")
+            logger.info(f"Initialized Gemini client for Batch processing with model: {self.model_name}")
         except Exception as e:
             raise ValueError(f"Failed to initialize Gemini client: {e}")
     
@@ -100,14 +97,14 @@ class BatchProcessor:
                 }
                 f.write(json.dumps(entry) + "\n")
         
-        print(f"Created batch request file with {len(paragraphs)} paragraphs")
+        logger.info(f"Created batch request file with {len(paragraphs)} paragraphs")
         
         # Upload the file to the File API
         uploaded_file = self.client.files.upload(
             file=temp_file_path,
             config={"display_name": batch_name, "mime_type": "application/jsonl"}
         )
-        print(f"Uploaded batch request file: {uploaded_file.name}")
+        logger.info(f"Uploaded batch request file: {uploaded_file.name}")
         
         # Create batch job
         batch_job = self.client.batches.create(
@@ -118,7 +115,7 @@ class BatchProcessor:
             },
         )
         
-        print(f"Created batch job: {batch_job.name}")
+        logger.info(f"Created batch job: {batch_job.name}")
         return batch_job.name
     
     def create_batch_job_for_formatting(self,
@@ -182,7 +179,7 @@ class BatchProcessor:
         if current_chunk:
             chunks.append(current_chunk)
         
-        print(f"Split document into {len(chunks)} chunks")
+        logger.info(f"Split document into {len(chunks)} chunks")
         return chunks
     
     def check_batch_job_status(self, job_name: str) -> Dict:
@@ -212,7 +209,7 @@ class BatchProcessor:
         if batch_job.state.name == 'JOB_STATE_FAILED' and hasattr(batch_job, 'error'):
             status["error"] = batch_job.error
         
-        print(f"Job {job_name} status: {status['state']}")
+        logger.info(f"Job {job_name} status: {status['state']}")
         return status
     
     def wait_for_batch_job(self, job_name: str, 
@@ -232,20 +229,20 @@ class BatchProcessor:
         start_time = time.time()
         elapsed = 0
         
-        print(f"Waiting for batch job {job_name} to complete...")
+        logger.info(f"Waiting for batch job {job_name} to complete...")
         
         while elapsed < max_wait_time:
             status = self.check_batch_job_status(job_name)
             
             if status["completed"]:
-                print(f"Job completed with state: {status['state']}")
+                logger.info(f"Job completed with state: {status['state']}")
                 return status
             
-            print(f"Job in progress... State: {status['state']}, Elapsed time: {elapsed:.0f}s")
+            logger.info(f"Job in progress... State: {status['state']}, Elapsed time: {elapsed:.0f}s")
             time.sleep(polling_interval)
             elapsed = time.time() - start_time
         
-        print(f"Warning: Maximum wait time ({max_wait_time}s) exceeded")
+        logger.warning(f"Maximum wait time ({max_wait_time}s) exceeded")
         return {"state": "TIMEOUT", "completed": False, "name": job_name}
     
     def get_batch_results(self, job_name: str) -> List[Dict]:
@@ -268,7 +265,7 @@ class BatchProcessor:
         # Results are in a file
         if batch_job.dest and batch_job.dest.file_name:
             result_file_name = batch_job.dest.file_name
-            print(f"Downloading results from file: {result_file_name}")
+            logger.info(f"Downloading results from file: {result_file_name}")
             
             # Download and process the JSONL results file
             file_content = self.client.files.download(file=result_file_name)
@@ -307,7 +304,7 @@ class BatchProcessor:
         # Sort results by key (which contains the original paragraph order)
         results.sort(key=lambda x: int(x["key"].split("-")[1]) if "-" in x["key"] else 0)
         
-        print(f"Retrieved {len(results)} results from batch job")
+        logger.info(f"Retrieved {len(results)} results from batch job")
         return results
     
     def reconstruct_document(self, batch_results: List[Dict]) -> str:
@@ -389,10 +386,10 @@ class BatchProcessor:
         """
         try:
             self.client.batches.cancel(name=job_name)
-            print(f"Cancelled batch job: {job_name}")
+            logger.info(f"Cancelled batch job: {job_name}")
             return True
         except Exception as e:
-            print(f"Error cancelling job {job_name}: {e}")
+            logger.error(f"Error cancelling job {job_name}: {e}")
             return False
     
     def cleanup(self):

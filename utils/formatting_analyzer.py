@@ -5,11 +5,14 @@ Analyzes citations, headings, references, margins, spacing, and other formatting
 """
 
 import re
+import logging
 from typing import List, Dict, Tuple, Optional
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-from style_guides import STYLE_GUIDES
+from core.style_guides import STYLE_GUIDES
+
+logger = logging.getLogger(__name__)
 
 class FormattingAnalyzer:
     """

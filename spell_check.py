@@ -18,10 +18,9 @@ from spellchecker import SpellChecker
 import google.generativeai as genai
 import json
 import os
-from dotenv import load_dotenv
+import os
 
-# Load environment variables for AI grammar checking
-load_dotenv()
+# Configuration (Expected to be loaded by app entry point)
 AI_API_KEY = os.getenv("GEMINI_API_KEY")
 AI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
 

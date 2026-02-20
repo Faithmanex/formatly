@@ -7,19 +7,17 @@ import google.generativeai as genai
 from typing import List, Dict, Tuple
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+import logging
 
-# Load environment variables
-load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+logger = logging.getLogger(__name__)
 
 class InputTokenCounter:
     """Counts tokens in input documents using official Gemini SDK."""
     
-    def __init__(self, api_key: str = API_KEY, model_name: str = MODEL_NAME):
-        self.model_name = model_name
-        self._initialize_client(api_key)
+    def __init__(self, api_key: str = None, model_name: str = None):
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.model_name = model_name or os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+        self._initialize_client(self.api_key)
     
     def _initialize_client(self, api_key: str):
         """Initialize the Gemini client."""
@@ -53,9 +51,7 @@ class InputTokenCounter:
             Tuple of (number of chunks needed, list of chunks)
         """
         total_tokens = self.count_tokens(text)
-        print(f"\nInput text analysis:")
-        print(f"Total tokens in text: {total_tokens}")
-        print(f"Maximum chunk size: {chunk_size}")
+        logger.info(f"Input text analysis: Total tokens: {total_tokens}, Max chunk size: {chunk_size}")
         
         chunks_needed = (total_tokens + chunk_size - 1) // chunk_size  # Ceiling division
         
@@ -97,36 +93,34 @@ class InputTokenCounter:
                     start = start - (len(chunk_text) - next_break)  # Adjust start for next iteration
                 
                 chunk_token_count = self.count_tokens(chunk_text)
-                print(f"Chunk {len(chunks) + 1}: {chunk_token_count} tokens")
+                logger.info(f"Chunk {len(chunks) + 1}: {chunk_token_count} tokens")
                 chunks.append(chunk_text)
             
-            print(f"\nChunking summary:")
-            print(f"Total input tokens: {total_tokens}")
-            print(f"Number of chunks created: {chunks_needed}")
-            print(f"Average tokens per chunk: {total_tokens / chunks_needed:.0f}")
-            print("-" * 50)
+            logger.info(f"Chunking summary: Total tokens: {total_tokens}, Chunks: {chunks_needed}, Avg: {total_tokens/chunks_needed:.0f}")
             return chunks_needed, chunks
         else:
-            print(f"\nChunking summary:")
-            print(f"Total input tokens: {total_tokens}")
-            print(f"Text fits in a single chunk (under {chunk_size} tokens)")
-            print("-" * 50)
+            logger.info(f"Chunking summary: Total tokens: {total_tokens}. Fits in single chunk.")
             return 1, [text]
 
 # Example usage when run directly
 if __name__ == "__main__":
-    counter = InputTokenCounter()
-    
-    print("\n=== Testing with small text (should fit in one chunk) ===")
-    small_text = "This is a small test text that should fit in a single chunk." * 10
-    _, _ = counter.estimate_chunks_needed(small_text, chunk_size=50000)
-    
-    print("\n=== Testing with large text (should require multiple chunks) ===")
-    large_text = "qwertyuiop" * 4991  # Will generate a larger text
-    _, chunks = counter.estimate_chunks_needed(large_text, chunk_size=50000)
-    
-    print("\nValidation of chunk sizes:")
-    print("-" * 50)
-    for i, chunk in enumerate(chunks, 1):
-        chunk_tokens = counter.count_tokens(chunk)
-        print(f"Chunk {i}: {chunk_tokens} tokens, {len(chunk)} characters")
+    # Configure logging for direct execution
+    logging.basicConfig(level=logging.INFO)
+    try:
+        counter = InputTokenCounter()
+        
+        print("\n=== Testing with small text (should fit in one chunk) ===")
+        small_text = "This is a small test text that should fit in a single chunk." * 10
+        _, _ = counter.estimate_chunks_needed(small_text, chunk_size=50000)
+        
+        print("\n=== Testing with large text (should require multiple chunks) ===")
+        large_text = "qwertyuiop" * 4991  # Will generate a larger text
+        _, chunks = counter.estimate_chunks_needed(large_text, chunk_size=50000)
+        
+        print("\nValidation of chunk sizes:")
+        print("-" * 50)
+        for i, chunk in enumerate(chunks, 1):
+            chunk_tokens = counter.count_tokens(chunk)
+            print(f"Chunk {i}: {chunk_tokens} tokens, {len(chunk)} characters")
+    except ValueError as e:
+        print(f"Error: {e}")

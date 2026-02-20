@@ -20,7 +20,7 @@ from docx.oxml.shared import OxmlElement
 from docx.shared import Inches, Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.enum.style import WD_STYLE_TYPE
-from style_guides import STYLE_GUIDES
+from core.style_guides import STYLE_GUIDES
 from spell_check import DocumentChecker, format_error_report
 from utils.auto_corrector import AutoCorrector
 from utils.rate_limit_manager import RateLimitManager

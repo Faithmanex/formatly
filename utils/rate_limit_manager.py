@@ -263,8 +263,8 @@ class RateLimitManager:
             wait_time = rate_info.get("retry_delay", 60) + 2
             quota_value = rate_info.get("quota_value", self.rate_limits["rpm"])
 
-            print(f"🔄 Requests per minute limit exceeded ({quota_value} RPM)")
-            print(f"   Waiting {wait_time} seconds before retrying...")
+            logger.warning(f"🔄 Requests per minute limit exceeded ({quota_value} RPM)")
+            logger.info(f"   Waiting {wait_time} seconds before retrying...")
 
             return True, wait_time
 
@@ -275,12 +275,12 @@ class RateLimitManager:
 
             if limit_type == "rpd_model":
                 error_message = f"🛑 Daily request limit exceeded: {quota_value} requests per day for model '{model}'"
-                print(error_message)
-                print(f"   This is a model-specific daily limit.")
-                print(f"   Suggestions:")
-                print(f"   • Switch to a different model (e.g., gemini-2.0-flash-lite)")
-                print(f"   • Upgrade to a paid plan for higher limits")
-                print(f"   • Wait until tomorrow for the quota to reset")
+                logger.error(error_message)
+                logger.info(f"   This is a model-specific daily limit.")
+                logger.info(f"   Suggestions:")
+                logger.info(f"   • Switch to a different model (e.g., gemini-2.0-flash-lite)")
+                logger.info(f"   • Upgrade to a paid plan for higher limits")
+                logger.info(f"   • Wait until tomorrow for the quota to reset")
 
                 # Raise custom exception to terminate the application
                 raise DailyQuotaExceededException(
@@ -291,12 +291,12 @@ class RateLimitManager:
                 )
             else:
                 error_message = f"🛑 Daily request limit exceeded: {quota_value} requests per day across all models"
-                print(error_message)
-                print(f"   This is a project-wide daily limit.")
-                print(f"   Suggestions:")
-                print(f"   • Upgrade to a paid plan for higher limits")
-                print(f"   • Create a new project with separate quotas")
-                print(f"   • Wait until tomorrow for the quota to reset")
+                logger.error(error_message)
+                logger.info(f"   This is a project-wide daily limit.")
+                logger.info(f"   Suggestions:")
+                logger.info(f"   • Upgrade to a paid plan for higher limits")
+                logger.info(f"   • Create a new project with separate quotas")
+                logger.info(f"   • Wait until tomorrow for the quota to reset")
 
                 # Raise custom exception to terminate the application
                 raise DailyQuotaExceededException(
@@ -310,8 +310,8 @@ class RateLimitManager:
             wait_time = rate_info.get("retry_delay", 60) + 2
             quota_value = rate_info.get("quota_value", self.rate_limits["tpm"])
 
-            print(f"🔄 Tokens per minute limit exceeded ({quota_value:,} TPM)")
-            print(f"   Waiting {wait_time} seconds before retrying...")
+            logger.warning(f"🔄 Tokens per minute limit exceeded ({quota_value:,} TPM)")
+            logger.info(f"   Waiting {wait_time} seconds before retrying...")
 
             return True, wait_time
 
@@ -319,9 +319,9 @@ class RateLimitManager:
             # Unknown limit type - use fallback behavior
             wait_time = rate_info.get("retry_delay", 60) + 2
 
-            print(f"⚠️ Unknown rate limit type detected")
-            print(f"   Error: {error_message[:200]}...")
-            print(f"   Attempting to retry after {wait_time} seconds...")
+            logger.warning(f"⚠️ Unknown rate limit type detected")
+            logger.warning(f"   Error: {error_message[:200]}...")
+            logger.info(f"   Attempting to retry after {wait_time} seconds...")
 
             return True, wait_time
 
@@ -335,7 +335,7 @@ class RateLimitManager:
         if wait_seconds <= 0:
             return
 
-        print(f"⏳ Rate limit reached. Waiting {wait_seconds} seconds before retrying...")
+        logger.info(f"⏳ Rate limit reached. Waiting {wait_seconds} seconds before retrying...")
 
         # Show progress for waits longer than 10 seconds
         if wait_seconds > 10:
@@ -344,12 +344,12 @@ class RateLimitManager:
 
             for i in range(intervals):
                 remaining = wait_seconds - (i * interval_time)
-                print(f"   ⏳ {remaining:.0f} seconds remaining...")
+                # print(f"   ⏳ {remaining:.0f} seconds remaining...") # Reduce noise in logs
                 time.sleep(interval_time)
         else:
             time.sleep(wait_seconds)
 
-        print("✅ Wait completed. Resuming processing...")
+        logger.info("✅ Wait completed. Resuming processing...")
 
     def execute_with_rate_limit(self, func, *args, **kwargs):
         """
@@ -412,26 +412,26 @@ class RateLimitManager:
                         # For overload, use standard backoff
                         should_retry = True
                         wait_time = 5 * (2 ** (retry_count - 1)) # 5, 10, 20...
-                        print(f"⚠️ Service Overloaded (503). Retrying in {wait_time}s...")
+                        logger.warning(f"⚠️ Service Overloaded (503). Retrying in {wait_time}s...")
                     else:
                         should_retry, wait_time = self.handle_rate_limit_error(error_str)
 
                     if not should_retry:
                         # Daily limit reached - don't retry
-                        print(f"❌ Daily quota limit reached. Stopping execution.")
+                        logger.error(f"❌ Daily quota limit reached. Stopping execution.")
                         raise
 
                     if retry_count < max_retries:
                          if not is_overload and api_key_manager.get_available_key_count() > 0:
-                            print(f"🔄 Rate limit exceeded (attempt {retry_count}/{max_retries})")
-                            print(f"🔑 Switching to next available API key...")
+                            logger.info(f"🔄 Rate limit exceeded (attempt {retry_count}/{max_retries})")
+                            logger.info(f"🔑 Switching to next available API key...")
                          elif is_overload:
-                            print(f"🔄 Retrying request (attempt {retry_count}/{max_retries})")
+                            logger.info(f"🔄 Retrying request (attempt {retry_count}/{max_retries})")
 
                          self.wait_with_progress(wait_time)
                          continue
                     else:
-                        print(f"❌ Maximum retries ({max_retries}) exceeded or no more API keys available")
+                        logger.error(f"❌ Maximum retries ({max_retries}) exceeded or no more API keys available")
                         raise
 
                 # If it's not a rate limit error, re-raise immediately

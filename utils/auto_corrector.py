@@ -2,7 +2,7 @@
 AutoCorrector Utility
 ---------------------
 High-level utility for orchestrating text correction.
-It acts as a wrapper around `spell_check.DocumentChecker` to apply automatic fixes
+It acts as a wrapper around `core.spell_check.DocumentChecker` to apply automatic fixes
 to lists of paragraphs.
 
 Key Features:
@@ -12,16 +12,14 @@ Key Features:
 """
 
 import re
+import logging
 from typing import List, Dict, Tuple, Optional
 import google.generativeai as genai
 import os
-from dotenv import load_dotenv
-from spell_check import DocumentChecker, SpellError, GrammarError, format_error_report
+# Use core.spell_check instead of root spell_check
+from core.spell_check import DocumentChecker, SpellError, GrammarError, format_error_report
 
-# Load environment variables for AI grammar correction
-load_dotenv()
-AI_API_KEY = os.getenv("GEMINI_API_KEY")
-AI_MODEL_NAME = os.getenv("GEMINI_MODEL")
+logger = logging.getLogger(__name__)
 
 class AutoCorrector:
     """
@@ -41,14 +39,23 @@ class AutoCorrector:
         self.english_variation = english_variation
         # Keep document_checker for backward compatibility
         self.document_checker = DocumentChecker(language=language, english_variation=english_variation)
+        
+        # Initialize configuration from environment
+        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.model_name = os.getenv("GEMINI_MODEL")
+        self.ai_model = None # Initialize lazily or if key present
 
     def _initialize_ai_model(self):
         """Initialize the AI model for advanced grammar correction."""
+        if not self.api_key:
+             logger.warning("GEMINI_API_KEY not found in environment. AI features disabled.")
+             return
+
         try:
-            genai.configure(api_key=AI_API_KEY)
-            self.ai_model = genai.GenerativeModel(AI_MODEL_NAME)
+            genai.configure(api_key=self.api_key)
+            self.ai_model = genai.GenerativeModel(self.model_name)
         except Exception as e:
-            print(f"Warning: Could not initialize AI model: {e}")
+            logger.warning(f"Could not initialize AI model: {e}")
             self.ai_model = None
 
     def get_correction_report(self, paragraphs: List[str]) -> Dict:
@@ -111,7 +118,7 @@ class AutoCorrector:
         Returns:
             Tuple of (paragraphs, empty_corrections)
         """
-        print("Note: Grammar correction has been disabled")
+        logger.info("Grammar correction has been disabled")
         return paragraphs.copy(), {}
 
     def apply_ai_grammar_correction(self, paragraphs: List[str]) -> Tuple[List[str], Dict]:
@@ -124,7 +131,7 @@ class AutoCorrector:
         Returns:
             Tuple of (paragraphs, empty_corrections)
         """
-        print("Note: AI-based grammar correction has been disabled")
+        logger.info("AI-based grammar correction has been disabled")
         return paragraphs.copy(), {}
 
     def _parse_ai_correction_response(self, response_text: str) -> Dict:
@@ -146,7 +153,7 @@ class AutoCorrector:
             return json.loads(text)
 
         except (json.JSONDecodeError, Exception) as e:
-            print(f"Warning: Could not parse AI correction response: {e}")
+            logger.warning(f"Could not parse AI correction response: {e}")
             return {}
 
     def correct_document(self, paragraphs: List[str],
@@ -179,7 +186,7 @@ class AutoCorrector:
 
         # AI correction has been removed
         if use_ai_correction:
-            print("Note: AI correction has been disabled")
+            logger.info("AI correction has been disabled")
 
         # Fall back to standard spell checking if Gemini is not available or failed
         if auto_fix_spelling:
@@ -188,8 +195,8 @@ class AutoCorrector:
             correction_summary["total_corrections"] += len(spelling_corrections)
 
         # Grammar correction via old method is disabled
-        if auto_fix_grammar and not self.gemini_corrector:
-            print("Note: Grammar correction requires Gemini AI which is not available.")
+        if auto_fix_grammar:
+             logger.info("Grammar correction requires Gemini AI which is not available.")
 
         return corrected_paragraphs, correction_summary
 
@@ -247,7 +254,7 @@ class AutoCorrector:
         Returns:
             Tuple of (corrected_paragraphs, correction_summary)
         """
-        print("Using basic spell checker...")
+        logger.info("Using basic spell checker...")
         return self.correct_document(
             paragraphs,
             auto_fix_spelling=True,

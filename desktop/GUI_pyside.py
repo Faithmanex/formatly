@@ -32,7 +32,7 @@ from PySide6.QtGui import QIcon
 import core.formatter
 from core.formatter import AdvancedFormatter
 from core.api_clients import HuggingFaceClient, GeminiClient
-from style_guides import STYLE_GUIDES
+from core.style_guides import STYLE_GUIDES
 from utils.track_changes import TrackChanges
 
 load_dotenv()

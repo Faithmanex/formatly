@@ -1,87 +1,112 @@
 """
-Track Changes Utility
----------------------
-Uses Microsoft Word (via COM automation/pywin32) to generate a "Track Changes"
-comparison between the original input document and the formatted output.
+Track Changes Utility (ConvertAPI Version)
+------------------------------------------
+Uses ConvertAPI to perform a document comparison and generate a tracked changes file.
+This version is platform-independent and works on Linux/Railway.
 
 Requirements:
-    - Windows OS
-    - Microsoft Word installed
-    - `pywin32` library
+    - convertapi library
+    - CONVERTAPI_API_KEY environment variable
 """
 
-import win32com.client
+import convertapi
 import os
 from pathlib import Path
-import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TrackChanges:
     """
-    Automates Word to compare two documents and save the result with tracked changes.
+    Uses ConvertAPI to compare two documents and save the result with tracked changes.
     """
-    def __init__(self, input_file: Path, output_file: Path):
+    def __init__(self, input_file: str, output_file: str):
+        """
+        Initialize with paths to the original and formatted documents.
+        
+        Args:
+            input_file: Path to the original (unformatted) document.
+            output_file: Path to the formatted document.
+        """
         self.input_file = input_file
         self.output_file = output_file
+        
+        # Set API credentials
+        # Set API credentials
+        api_key = os.getenv("CONVERTAPI_API_KEY")
+        if not api_key:
+            logger.warning("CONVERTAPI_API_KEY environment variable is not set. Track changes might fail.")
+            # Don't raise immediately, let it fail when called if needed, or check elsewhere
+        
+        if api_key:
+             convertapi.api_credentials = api_key
 
-    def compare_docs(self):
-        word = win32com.client.gencache.EnsureDispatch("Word.Application")
-        word.Visible = False
-
+    def compare_docs(self, save_dir: str = None) -> str:
+        """
+        Compare the documents using ConvertAPI.
+        
+        Args:
+            save_dir: Directory to save the resulting tracked changes file. 
+                     Defaults to the same directory as the output_file.
+                     
+        Returns:
+            The path to the saved comparison file.
+        """
         try:
-            # Open original document
-            original_doc = word.Documents.Open(str(self.input_file))
+            input_path = Path(self.input_file)
+            output_path = Path(self.output_file)
             
-            # Open formatted document
-            formatted_doc = word.Documents.Open(str(self.output_file))
-
-            # Create a new name for the comparison document
-            output_dir = Path(self.output_file).parent
-            output_name = Path(self.output_file).stem
-            comparison_path = str(output_dir / f"{output_name}_Tracked.docx")
-
-            # Compare documents
-            comparison = word.CompareDocuments(original_doc, formatted_doc)
-
-            if comparison:
-                # Save the comparison as tracked file with a new name
-                comparison.ActiveWindow.View.Type = 3  # Print Layout view
-                comparison.SaveAs(comparison_path)
-                print(f"Comparison saved to: {comparison_path}")
+            if not save_dir:
+                save_dir = str(output_path.parent)
+            
+            comparison_filename = f"{output_path.stem}_Tracked.docx"
+            comparison_path = os.path.join(save_dir, comparison_filename)
+            
+            logger.info(f"Comparing {input_path.name} and {output_path.name} via ConvertAPI...")
+            
+            # Perform comparison
+            result = convertapi.convert('compare', {
+                'File': str(input_path),
+                'CompareFile': str(output_path),
+                'CompareLevel': 'Character',
+                'RevisionAuthor': 'Formatly'
+            }, from_format='docx')
+            
+            # Save the result
+            result.save_files(save_dir)
+            
+            # Clean up/Rename saved file to consistent name if needed
+            saved_files = result.list_files()
+            if saved_files:
+                api_saved_name = saved_files[0].filename
+                api_saved_path = os.path.join(save_dir, api_saved_name)
                 
-                # Close the comparison document
-                comparison.Close(SaveChanges=False)
-                
-                # Open the comparison document
-                os.startfile(comparison_path)
-            else:
-                print("No differences found between documents.")
+                if api_saved_path != comparison_path:
+                    if os.path.exists(comparison_path):
+                        os.remove(comparison_path)
+                    os.rename(api_saved_path, comparison_path)
+            
+            logger.info(f"Comparison saved to: {comparison_path}")
+            
+            # Auto-open on Windows desktop only
+            if os.name == 'nt' and not os.getenv("RAILWAY_ENVIRONMENT"):
+                try:
+                    os.startfile(comparison_path)
+                except Exception:
+                    pass
+                    
+            return comparison_path
 
         except Exception as e:
-            print(f"Error comparing documents: {e}")
+            logger.error(f"Error comparing documents via ConvertAPI: {e}")
             raise
-        finally:
-            # Close all documents
-            for doc in word.Documents:
-                doc.Close(SaveChanges=False)
-            word.Quit()
-            time.sleep(3)
-
 
 if __name__ == "__main__":
-    # Example usage:
-    # Place two sample .docx files in the repository `formatted/` folder
-    # named `example_original.docx` and `example_formatted.docx` (or update paths below).
-    # repo_root = Path(__file__).resolve().parent.parent
-    # examples_input_dir = repo_root / "documents"
-    # examples_output_dir = repo_root / "formatted"
-    input_sample = "C:/Users/DELL XPS 9360/Desktop/School/B.Sc Project/Main/Hard/A Secure Web-Based Event Ticketing System Using QR Code Technology.docx"
-    output_sample = "C:/Users/DELL XPS 9360/Documents/GitHub/formatly/formatted/A Secure Web-Based Event Ticketing System Using QR Code Technology_formatted_apa.docx"
-
-    # if not input_sample.exists() or not output_sample.exists():
-    #     print(
-    #         f"Example files not found: {input_sample} or {output_sample}\n"
-    #         "Please place sample .docx files at these locations or update the paths in this block."
-    #     )
-    # else:
-    tracker = TrackChanges(input_sample, output_sample)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('original', help='Original file')
+    parser.add_argument('formatted', help='Formatted file')
+    args = parser.parse_args()
+    
+    tracker = TrackChanges(args.original, args.formatted)
     tracker.compare_docs()
