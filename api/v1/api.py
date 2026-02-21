@@ -48,18 +48,10 @@ import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 # Import Core Logic
-try:
-    from core.api_clients import HuggingFaceClient, GeminiClient
-    from core.formatter import AdvancedFormatter
-    from core.style_guides import STYLE_GUIDES
-except ImportError as e:
-    logger.error(f"Failed to import core modules: {e}")
-    # We might be running in a context where root is already in path
-    try:
-        from core.api_clients import HuggingFaceClient, GeminiClient
-        from core.formatter import AdvancedFormatter
-    except ImportError:
-        raise ImportError(f"Could not import core modules even after path adjustment. Path: {sys.path}")
+from core.api_clients import HuggingFaceClient, GeminiClient
+from core.formatter import AdvancedFormatter
+from core.style_guides import STYLE_GUIDES
+from utils.track_changes import TrackChanges
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -96,6 +88,8 @@ else:
 security = HTTPBearer(auto_error=False)
 
 # Pydantic models
+from pydantic import BaseModel, Field
+
 class CreateUploadResponse(BaseModel):
     success: bool
     job_id: str
@@ -123,7 +117,7 @@ class FormattedDocumentResponse(BaseModel):
     filename: str
     content: str  # base64 encoded
     tracked_changes_content: Optional[str] = None
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class ProcessDocumentRequest(BaseModel):
     filename: str
@@ -131,7 +125,7 @@ class ProcessDocumentRequest(BaseModel):
     style: str
     englishVariant: str
     trackedChanges: bool = False
-    options: Optional[Dict[str, Any]] = None
+    options: Dict[str, Any] = Field(default_factory=dict)
 
 class ProcessDocumentResponse(BaseModel):
     success: bool
@@ -276,6 +270,12 @@ async def update_document_status(job_id: str, status: str, progress: int = None,
             if formatting_time is not None:
                 update_data["formatting_time"] = formatting_time
             
+            # Add tracked changes URL if provided in processing_log
+            if processing_log and "tracked_changes_url" in processing_log:
+                update_data["tracked_changes_url"] = processing_log["tracked_changes_url"]
+                # Ensure the tracked_changes boolean reflects reality
+                update_data["tracked_changes"] = True
+
         supabase.table("documents").update(update_data).eq("id", job_id).execute()
         
     except Exception as e:
@@ -321,17 +321,7 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         # 1. Download file from Supabase
         logger.info(f"Downloading file {file_path} for job {job_id}")
         
-        # Ensure we are using the relative path, not a full URL
-        relative_path = file_path
-        if "http" in file_path and "/documents/" in file_path:
-             # Extract path after the bucket name if it's a full URL
-             # This is a fallback heuristic
-             parts = file_path.split("/documents/")
-             if len(parts) > 1:
-                 relative_path = parts[-1].split("?")[0] # Remove query params
-        
-        logger.info(f"Using relative path for download: {relative_path}")
-        file_content = supabase.storage.from_("documents").download(relative_path)
+        file_content = supabase.storage.from_("documents").download(file_path)
         with open(local_input_path, "wb") as f:
             f.write(file_content)
             
@@ -339,7 +329,6 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         await update_document_status(job_id, "processing", 10, {"message": "File downloaded, initializing AI..."})
 
         # 3. Initialize AI Client & Formatter
-        # Default to HuggingFace for now, or make it configurable via env/options
         backend = os.getenv("DEFAULT_BACKEND", "huggingface")
         if backend == "gemini":
             client = GeminiClient()
@@ -351,8 +340,6 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         # 4. Run Formatting
         await update_document_status(job_id, "processing", 30, {"message": f"Analyzing document structure with {backend}..."})
         
-        # We run format_document in a thread executor to avoid blocking the async loop
-        # since it uses synchronous python-docx and requests calls
         loop = asyncio.get_event_loop()
         start_time = time.time()
         
@@ -370,29 +357,50 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
                 f,
                 {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
             )
-            
-        # 6. Finalize Status
+
+        # 6. Track Changes if requested
+        tracked_changes_url = None
+        if options.get("trackedChanges"):
+            try:
+                await update_document_status(job_id, "processing", 95, {"message": "Generating tracked changes..."})
+                tracker = TrackChanges(str(local_input_path), str(local_output_path))
+                tracked_path = await loop.run_in_executor(None, tracker.compare_docs)
+                
+                if tracked_path and os.path.exists(tracked_path):
+                    tracked_filename = f"tracked/{job_id}_tracked.docx"
+                    with open(tracked_path, "rb") as f:
+                        supabase.storage.from_("documents").upload(
+                            tracked_filename,
+                            f,
+                            {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+                        )
+                    tracked_changes_url = tracked_filename
+                    logger.info(f"Tracked changes uploaded: {tracked_filename}")
+            except Exception as te:
+                logger.error(f"Track changes failed for job {job_id}: {te}")
+
+        # 7. Finalize Status
         processing_log = {
             "progress": 100,
             "processing_time": duration,
             "backend": backend,
-            "message": "Formatting successful"
+            "message": "Formatting successful",
+            "tracked_changes_url": tracked_changes_url
         }
         
         await update_document_status(job_id, "formatted", 100, processing_log, result_url=result_filename, formatting_time=duration)
         
-        # 7. Track subscription usage (document count)
+        # 8. Track usage
         try:
             await track_document_usage(user_id)
         except Exception as usage_error:
-            logger.warning(f"Failed to track document usage for user {user_id}: {usage_error}")
+            logger.warning(f"Failed to track document usage: {usage_error}")
         
-        # 8. Track storage usage (original file size)
         try:
-            original_file_size_mb = len(file_content) / (1024 * 1024)  # Convert bytes to MB
+            original_file_size_mb = len(file_content) / (1024 * 1024)
             await track_storage_usage(user_id, original_file_size_mb)
         except Exception as storage_error:
-            logger.warning(f"Failed to track storage usage for user {user_id}: {storage_error}")
+            logger.warning(f"Failed to track storage usage: {storage_error}")
         
         logger.info(f"Job {job_id} completed successfully.")
 
@@ -401,10 +409,10 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         traceback.print_exc()
         
         error_msg = str(e)
-        if "JSON Parsing Error" in error_msg or "Unexpected end of input" in error_msg:
-            error_msg = "Formatting failed: AI response was malformed. Please try again."
-        elif "peer closed connection" in error_msg or "incomplete chunked read" in error_msg:
-            error_msg = "Formatting failed: Connection to AI server lost. Please try again."
+        if "JSON Parsing Error" in error_msg:
+            error_msg = "Formatting failed: AI response was malformed."
+        elif "connection" in error_msg.lower():
+            error_msg = "Formatting failed: Connection error."
             
         await update_document_status(job_id, "failed", 0, {"error": error_msg})
         
@@ -547,10 +555,21 @@ async def download_document(job_id: str, user: dict = Depends(verify_token)):
         # Base64 encode
         encoded_content = base64.b64encode(file_content).decode()
         
+        # Download tracked changes if available
+        tracked_content = None
+        tracked_url = doc.get("tracked_changes_url")
+        if tracked_url:
+            try:
+                tracked_file_content = supabase.storage.from_("documents").download(tracked_url)
+                tracked_content = base64.b64encode(tracked_file_content).decode()
+            except Exception as e:
+                logger.error(f"Failed to download tracked changes: {e}")
+
         return FormattedDocumentResponse(
             success=True,
             filename=f"formatted_{doc['filename']}",
             content=encoded_content,
+            tracked_changes_content=tracked_content,
             metadata={"style": doc["style_applied"]}
         )
         
@@ -633,9 +652,8 @@ async def process_document(
             except Exception as e:
                  logger.error(f"Failed to upload legacy content: {e}")
         
-        options = {
-            "trackedChanges": request.trackedChanges
-        }
+        options = request.options.copy()
+        options["trackedChanges"] = request.trackedChanges
         
         await create_document_record(
             user["user_id"],
@@ -672,17 +690,11 @@ async def process_document(
 
 @app.get("/api/formatting/styles")
 async def get_formatting_styles():
-    try:
-        return FORMATTING_STYLES
-    except Exception:
-        return FORMATTING_STYLES
+    return FORMATTING_STYLES
 
 @app.get("/api/formatting/variants")
 async def get_english_variants():
-    try:
-        return ENGLISH_VARIANTS
-    except Exception:
-        return ENGLISH_VARIANTS
+    return ENGLISH_VARIANTS
 
 @app.get("/api/jobs")
 async def list_jobs(user: dict = Depends(verify_token)):
