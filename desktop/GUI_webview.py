@@ -8,6 +8,11 @@ from pathlib import Path
 import inspect
 from dotenv import load_dotenv
 
+# Ensure the root directory is in sys.path so we use the shared core and utils
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 # Import core logic
 import core.formatter
 from core.formatter import AdvancedFormatter

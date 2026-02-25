@@ -22,6 +22,11 @@ import winsound
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Ensure the root directory is in sys.path so we use the shared core and utils
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QVBoxLayout, QWidget, QFrame
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWebChannel import QWebChannel
