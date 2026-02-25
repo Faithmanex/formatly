@@ -48,6 +48,12 @@ MODEL_QUOTAS = {
         "rpd": 1,
         "max_tokens": 120000,
         "tpm": 250000
+    },
+    "gemini-3-flash": {
+        "rpm": 5,
+        "rpd": 100,
+        "max_tokens": 120000,
+        "tpm": 250000
     }
 }
 

@@ -140,6 +140,24 @@ STYLE_GUIDES = {
                 "based_on": "Normal",
                 "next_style": "Title Affiliation"
             },
+            "Title Degree": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "keep_together": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Title Affiliation"
+            },
             "Title Affiliation": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -1136,6 +1154,24 @@ STYLE_GUIDES = {
                 "based_on": "Normal",
                 "next_style": "Title Affiliation"
             },
+            "Title Degree": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "keep_together": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Title Affiliation"
+            },
             "Title Affiliation": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -2114,6 +2150,24 @@ STYLE_GUIDES = {
                 "based_on": "Normal",
                 "next_style": "Title Affiliation"
             },
+            "Title Degree": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "keep_together": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Title Affiliation"
+            },
             "Title Affiliation": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -3071,6 +3125,24 @@ STYLE_GUIDES = {
                 "next_style": "Title Department"
             },
             "Title Department": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "keep_together": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Title Affiliation"
+            },
+            "Title Degree": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
                     "name": "Times New Roman",

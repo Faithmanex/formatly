@@ -6,6 +6,7 @@ STYLE_MAPPINGS = {
     "course": "Title Course",
     "instructor": "Title Instructor",
     "due_date": "Title Date",
+    "degree": "Title Degree",
     "title_department": "Title Department",
     "title_byline": "Title Byline",
     "dedication_heading": "Dedication Heading",
