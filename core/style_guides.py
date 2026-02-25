@@ -78,6 +78,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(24.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True,
                     "page_break_before": True,
@@ -98,6 +100,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -116,6 +120,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -134,6 +140,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -152,6 +160,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -170,6 +180,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -188,6 +200,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -206,6 +220,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -224,6 +240,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(24.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": False,
                     "page_break_before": False
@@ -472,7 +490,7 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
-                    "first_line_indent": Inches(0.5),
+                    "first_line_indent": Inches(0.0),
                     "keep_together": False,
                     "keep_with_next": True,
                     "left_indent": Inches(0.0),
@@ -1112,6 +1130,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1130,6 +1150,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1148,6 +1170,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1166,6 +1190,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1184,6 +1210,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1202,6 +1230,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1220,6 +1250,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -1599,7 +1631,7 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
-                    "first_line_indent": Inches(0.5),
+                    "first_line_indent": Inches(0.0),
                     "keep_together": False,
                     "keep_with_next": True,
                     "left_indent": Inches(0.0),
@@ -2087,7 +2119,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(24.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
-                    "first_line_indent": Inches(0),
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True,
                     "page_break_before": True,
@@ -2108,6 +2141,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2126,6 +2161,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2144,6 +2181,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2162,6 +2201,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2180,6 +2221,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2198,6 +2241,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2216,6 +2261,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -2234,6 +2281,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": False,
                     "page_break_after": True
@@ -2596,7 +2645,7 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
-                    "first_line_indent": Inches(0.5),
+                    "first_line_indent": Inches(0.0),
                     "keep_together": False,
                     "keep_with_next": True,
                     "left_indent": Inches(0.0),
@@ -3079,7 +3128,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(24.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
-                    "first_line_indent": Inches(0),
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True,
                     "page_break_before": True,
@@ -3100,6 +3150,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3118,6 +3170,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3136,6 +3190,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3154,6 +3210,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3172,6 +3230,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3190,6 +3250,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3208,6 +3270,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": True
                 },
@@ -3226,6 +3290,8 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(24.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
                     "keep_together": True,
                     "keep_with_next": False,
                     "page_break_before": False
@@ -3588,7 +3654,7 @@ STYLE_GUIDES = {
                     "space_before": Pt(0.0),
                     "space_after": Pt(0.0),
                     "line_spacing": WD_LINE_SPACING.DOUBLE,
-                    "first_line_indent": Inches(0.5),
+                    "first_line_indent": Inches(0.0),
                     "keep_together": False,
                     "keep_with_next": True,
                     "left_indent": Inches(0.0),
