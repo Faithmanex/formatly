@@ -898,7 +898,7 @@ STYLE_GUIDES = {
                 "next_style": "Normal"
             },
             "List Bullet": {
-                "type": WD_STYLE_TYPE.LIST,
+                "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
                     "name": "Times New Roman",
                     "size": Pt(12),
@@ -924,7 +924,7 @@ STYLE_GUIDES = {
                 "next_style": "List Bullet"
             },
             "List Number": {
-                "type": WD_STYLE_TYPE.LIST,
+                "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
                     "name": "Times New Roman",
                     "size": Pt(12),

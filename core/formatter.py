@@ -108,7 +108,7 @@ class DocumentStructureManager:
              * GENERAL RULE — ONE BLOCK, ONE ELEMENT:
                Each block must represent exactly ONE distinct semantic element. This is a strict rule with NO exceptions:
                - If a paragraph contains two different types of information (e.g., a department name AND a university name on separate lines), split them into two separate blocks, each with its correct type.
-               - Never use a newline character (\n) inside `content` to merge two semantically different elements into one block.
+               - Never use a newline character "\n" inside `content` to merge two semantically different elements into one block.
                - A newline within one block is only acceptable if the content is naturally multi-line AND belongs to the same semantic type (e.g., a multi-line address for a single `institution`, or a multi-paragraph `body` block).
                - CORRECT EXAMPLE: {{"type": "title_department", "content": "Department of Curriculum", "attributes": {{}}}} and {{"type": "institution", "content": "University of Toronto", "attributes": {{}}}}
                - WRONG EXAMPLE:   {{"type": "institution", "content": "Department of Curriculum\nUniversity of Toronto", "attributes": {{}}}}
@@ -125,6 +125,12 @@ class DocumentStructureManager:
            - "code_block", "footnote"
 
         11. **Headings for preliminary pages (title page, abstract page, etc.) should use their specific types (e.g., "abstract_heading") if available, otherwise "heading_1".**
+
+        12. **BLOCK BOUNDARIES**: Every block MUST be a complete, self-contained JSON object. Each object begins with `{{` and ends with `}}`, separated from the next by a comma. A single JSON object must NEVER contain two `"type"` keys. If you find yourself writing a second `"type"` key inside an open `{{`, you have forgotten to close the previous block.
+
+        13. **REQUIRED FIELDS**: Every block MUST contain exactly these three fields — no more, no less:
+            {{"type": "...", "content": "...", "attributes": {{}}}}
+            Omitting any of these three fields is NOT allowed, even if `attributes` is empty.
 
         Analyze the input document and populate the "blocks" list accordingly, intelligently."""
         
