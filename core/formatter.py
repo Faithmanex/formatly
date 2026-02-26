@@ -1192,13 +1192,9 @@ class AdvancedFormatter:
             if isinstance(style_name, str) and style_name.lower() == 'ds-markdown-paragraph':
                 # Convert to Normal style if available so paragraph-level properties are applied
                 if 'Normal' in doc.styles:
-                    try:
-                        paragraph.style = doc.styles['Normal']
-                        style_name = 'Normal'
-                        print(f"Converted ds-markdown-paragraph to 'Normal' for paragraph: '{paragraph.text[:60]}...'")
-                    except Exception:
-                        # If conversion fails, fall back to original style_name
-                        pass
+                    paragraph.style = doc.styles['Normal']
+                    style_name = 'Normal'
+                    print(f"Converted ds-markdown-paragraph to 'Normal' for paragraph: '{paragraph.text[:60]}...'")
             
             # Retrieve the configuration for the paragraph's style
             if style_name not in styles_config:
@@ -1450,11 +1446,7 @@ class AdvancedFormatter:
                 run.font.color.rgb = RGBColor(0, 0, 0)
 
     def _ensure_numbering_part(self, doc):
-        try:
-            numbering = doc.part.numbering_part
-            return numbering
-        except Exception:
-            return None
+        return doc.part.numbering_part
     
     def _apply_heading_styles(self, doc):
             """Apply heading styles based on the style guide."""
@@ -1485,7 +1477,4 @@ class AdvancedFormatter:
                      if not p.text.strip() and not p.runs]
         
         for p in reversed(to_remove):
-            try:
-                p._element.getparent().remove(p._element)
-            except Exception:
-                pass
+            p._element.getparent().remove(p._element)
