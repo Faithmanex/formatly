@@ -358,23 +358,20 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         # 6. Track Changes if requested
         tracked_changes_url = None
         if options.get("trackedChanges"):
-            try:
-                await update_document_status(job_id, "processing", 95, {"message": "Generating tracked changes..."})
-                tracker = TrackChanges(str(local_input_path), str(local_output_path))
-                tracked_path = await loop.run_in_executor(None, tracker.compare_docs)
+            await update_document_status(job_id, "processing", 95, {"message": "Generating tracked changes..."})
+            tracker = TrackChanges(str(local_input_path), str(local_output_path))
+            tracked_path = await loop.run_in_executor(None, tracker.compare_docs)
 
-                if tracked_path and os.path.exists(tracked_path):
-                    tracked_filename = f"{user_id}/tracked/{job_id}_tracked.docx"
-                    with open(tracked_path, "rb") as f:
-                        supabase.storage.from_("documents").upload(
-                            tracked_filename,
-                            f,
-                            {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
-                        )
-                    tracked_changes_url = tracked_filename
-                    logger.info(f"Tracked changes uploaded: {tracked_filename}")
-            except Exception as te:
-                logger.error(f"Track changes failed for job {job_id}: {te}")
+            if tracked_path and os.path.exists(tracked_path):
+                tracked_filename = f"{user_id}/tracked/{job_id}_tracked.docx"
+                with open(tracked_path, "rb") as f:
+                    supabase.storage.from_("documents").upload(
+                        tracked_filename,
+                        f,
+                        {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+                    )
+                tracked_changes_url = tracked_filename
+                logger.info(f"Tracked changes uploaded: {tracked_filename}")
 
         # 7. Finalize Status
         processing_log = {
@@ -392,16 +389,9 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         )
         
         # 8. Track usage
-        try:
-            await track_document_usage(user_id)
-        except Exception as usage_error:
-            logger.warning(f"Failed to track document usage: {usage_error}")
-        
-        try:
-            original_file_size_mb = len(file_content) / (1024 * 1024)
-            await track_storage_usage(user_id, original_file_size_mb)
-        except Exception as storage_error:
-            logger.warning(f"Failed to track storage usage: {storage_error}")
+        await track_document_usage(user_id)
+        original_file_size_mb = len(file_content) / (1024 * 1024)
+        await track_storage_usage(user_id, original_file_size_mb)
         
         logger.info(f"Job {job_id} completed successfully.")
 
