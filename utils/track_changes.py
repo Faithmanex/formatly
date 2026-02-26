@@ -74,7 +74,7 @@ class TrackChanges:
             
             # Save the result
             result.save_files(save_dir)
-
+####################### This  bug almost took my life #######################
             actual_path = os.path.join(save_dir, result.file.filename)
 
             # Rename to a consistent name only if needed
