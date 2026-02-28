@@ -7,10 +7,7 @@ import google.generativeai as genai
 from typing import List, Dict, Tuple
 from pathlib import Path
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
 

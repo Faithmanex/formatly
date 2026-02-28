@@ -8,11 +8,8 @@ import re
 from typing import List, Dict, Tuple, Optional
 import google.generativeai as genai
 import os
-from dotenv import load_dotenv
 from spell_check import DocumentChecker, SpellError, GrammarError, format_error_report
 
-# Load environment variables for AI grammar correction
-load_dotenv()
 AI_API_KEY = os.getenv("GEMINI_API_KEY")
 AI_MODEL_NAME = os.getenv("GEMINI_MODEL")
 

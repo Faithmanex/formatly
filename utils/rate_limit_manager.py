@@ -19,7 +19,7 @@ from typing import Dict, Optional, Tuple
 from datetime import datetime, timedelta
 import logging
 from .api_key_manager import api_key_manager
-from config import MODEL_QUOTAS
+from core.config import MODEL_QUOTAS
 
 # Configure logging
 # Configure logging

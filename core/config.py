@@ -8,8 +8,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the root .env file
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Model quotas and limitations
 MODEL_QUOTAS = {
