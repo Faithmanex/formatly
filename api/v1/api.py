@@ -32,11 +32,14 @@ import asyncio
 import jwt
 from supabase import create_client, Client
 import logging
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Load environment variables
+load_dotenv()
 
 # Calculate root path: v1 -> api -> project_root
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))

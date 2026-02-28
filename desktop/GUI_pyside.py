@@ -20,6 +20,7 @@ import threading
 import time
 import winsound
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Ensure the root directory is in sys.path so we use the shared core and utils
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +40,7 @@ from core.api_clients import HuggingFaceClient, GeminiClient
 from core.style_guides import STYLE_GUIDES
 from utils.track_changes import TrackChanges
 
+load_dotenv()
 
 DATA_FILE = "user_data.json"
 

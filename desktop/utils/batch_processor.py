@@ -10,9 +10,12 @@ import time
 from typing import List, Dict, Tuple, Optional, Any
 import google.generativeai as genai
 from pathlib import Path
+from dotenv import load_dotenv
 import uuid
 import tempfile
 
+# Load environment variables
+load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = os.getenv("GEMINI_MODEL")
 
