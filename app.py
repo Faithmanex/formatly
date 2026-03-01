@@ -86,6 +86,7 @@ STYLE_MAPPINGS = {
     "instructor": "Title Instructor",
     "due_date": "Title Date",
     "title_department": "Title Department",
+    "registration_number": "Title Registration Number",
     "title_byline": "Title Byline",
     "dedication": "Heading 1",
     "acknowledgments": "Heading 1", # Often Heading 1 in structure
@@ -209,7 +210,7 @@ class DocumentStructureManager:
            - Use `appendix_heading` for individual appendix titles (e.g., "Appendix A", "Appendix 1: Data Tables", "Conclusion of Appendix, etc.").
 
         10. **Block Types**: Assign one of the following types to each block of content:
-           - "title", "title_byline", "author", "institution", "title_department", "course", "instructor", "due_date" (Title Page Elements)
+           - "title", "title_byline", "author", "institution", "title_department", "registration_number", "course", "instructor", "due_date" (Title Page Elements)
            - "keywords", "dedication", "epigraph", "acknowledgments", "preface" (Front Matter)
            - "heading_1", "heading_2", "heading_3", "heading_4", "heading_5". 
            - "abstract_heading", "abstract_text"

@@ -112,7 +112,7 @@ class DocumentStructureManager:
                - A newline within one block is only acceptable if the content is naturally multi-line AND belongs to the same semantic type (e.g., a multi-line address for a single `institution`, or a multi-paragraph `body` block).
                - CORRECT EXAMPLE: {{"type": "title_department", "content": "Department of Curriculum", "attributes": {{}}}} and {{"type": "institution", "content": "University of Toronto", "attributes": {{}}}}
                - WRONG EXAMPLE:   {{"type": "institution", "content": "Department of Curriculum\nUniversity of Toronto", "attributes": {{}}}}
-           - "title", "title_byline", "author", "institution", "title_department", "degree", "course", "instructor", "due_date" (Title Page Elements)
+           - "title", "title_byline", "author", "institution", "title_department", "registration_number", "degree", "course", "instructor", "due_date" (Title Page Elements)
             - "keywords", "epigraph", "abstract_heading", "abstract_text" (Top-level Headings)
             - "dedication_heading", "dedication_body", "acknowledgements_heading", "acknowledgement_body", "preface_heading", "preface_body" (Front Matter)
            - "heading_1", "heading_2", "heading_3", "heading_4", "heading_5". 

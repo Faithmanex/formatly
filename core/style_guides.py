@@ -226,6 +226,26 @@ STYLE_GUIDES = {
                     "keep_with_next": True
                 },
                 "based_on": "Normal",
+                "next_style": "Title Registration Number"
+            },
+            "Title Registration Number": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
+                    "keep_together": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
                 "next_style": "Title Date"
             },
             "Title Date": {
