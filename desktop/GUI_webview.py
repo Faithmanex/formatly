@@ -8,6 +8,12 @@ from pathlib import Path
 import inspect
 from dotenv import load_dotenv
 
+# Architecture Note:
+#     - This application utilizes the shared core library and utilities
+#       located in the root `core/` and `utils/` directories.
+#     - The root directory is added to `sys.path` to ensure these shared
+#       modules are correctly imported.
+
 # Ensure the root directory is in sys.path so we use the shared core and utils
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:

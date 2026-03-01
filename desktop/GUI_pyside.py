@@ -6,11 +6,10 @@ It uses QWebEngineView to render a modern HTML/JS interface while handling
 backend logic in Python.
 
 Architecture Note:
-    - This application currently relies on a local copy of the core library
-      located in `desktop/core/` and `desktop/style_guides.py`.
-    - It does NOT currently import from the root `core/` directory to ensure
-      self-contained distribution (e.g., with PyInstaller).
-    - Future refactoring may aim to unify these codebases.
+    - This application utilizes the shared core library and utilities
+      located in the root `core/` and `utils/` directories.
+    - The root directory is added to `sys.path` to ensure these shared
+      modules are correctly imported.
 """
 
 import sys

@@ -21,7 +21,7 @@ import os
 
 # Configuration (Expected to be loaded by app entry point)
 AI_API_KEY = os.getenv("GEMINI_API_KEY")
-AI_MODEL_NAME = os.getenv("GEMINI_MODEL")
+AI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
 
 @dataclass
 class SpellError:
