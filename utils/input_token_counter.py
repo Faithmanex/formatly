@@ -16,7 +16,7 @@ class InputTokenCounter:
     
     def __init__(self, api_key: str = None, model_name: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = model_name or os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+        self.model_name = model_name or os.getenv("GEMINI_MODEL")
         self._initialize_client(self.api_key)
     
     def _initialize_client(self, api_key: str):

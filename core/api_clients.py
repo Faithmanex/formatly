@@ -110,7 +110,7 @@ class GeminiClient(AIClient):
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY not provided")
             
-        self._model_name = os.getenv("GEMINI_MODEL", "")
+        self._model_name = os.getenv("GEMINI_MODEL")
         self.rate_limit_manager = RateLimitManager(self._model_name)
         genai.configure(api_key=self.api_key)
 

@@ -47,7 +47,7 @@ class APIManager:
     def __init__(self):
         load_dotenv()
         self.api_key = os.getenv("GEMINI_API_KEY")
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        self.model_name = os.getenv("GEMINI_MODEL")
         self.rate_limit_manager = RateLimitManager(self.model_name)
         self._model = None
         

@@ -68,7 +68,7 @@ class Config:
     
     def __init__(self):
         self.api_key = self._get_api_key()
-        self.model_name = os.getenv("GEMINI_MODEL", "")
+        self.model_name = os.getenv("GEMINI_MODEL")
         self.max_retries = int(os.getenv("MAX_RETRIES", "3"))
         self.timeout = int(os.getenv("TIMEOUT", "30"))
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
