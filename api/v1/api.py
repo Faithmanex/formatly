@@ -308,32 +308,6 @@ async def track_storage_usage(user_id: str, storage_mb: float):
         # Don't raise here
         # raise
 
-async def check_user_limits(user_id: str):
-    """Check if user has reached their document or storage limits"""
-    try:
-        if not supabase:
-            return
-            
-        response = supabase.rpc("check_usage_limits", {"p_user_id": user_id}).execute()
-        if response.data and len(response.data) > 0:
-            usage = response.data[0]
-            if usage.get("documents_at_limit"):
-                raise HTTPException(
-                    status_code=403, 
-                    detail="You have reached your document processing limit. Please upgrade your plan to process more documents."
-                )
-            if usage.get("storage_at_limit"):
-                raise HTTPException(
-                    status_code=403, 
-                    detail="You have reached your storage limit. Please delete some documents or upgrade your plan."
-                )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error checking usage limits: {str(e)}")
-        # Continue if check fails to avoid blocking users due to system errors
-        pass
-
 async def process_document_task(job_id: str, file_path: str, style: str, english_variant: str, options: Dict[str, Any], user_id: str):
     """Background task to process the document using Core Formatter"""
     temp_dir = tempfile.mkdtemp()
@@ -452,9 +426,6 @@ async def create_upload_url(
     user: dict = Depends(verify_token)
 ) -> CreateUploadResponse:
     try:
-        # Check usage limits before allowing upload
-        await check_user_limits(user["user_id"])
-        
         if style not in VALID_STYLES:
             raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(VALID_STYLES)}")
         
@@ -610,9 +581,6 @@ async def upload_document(
 ):
     """EXISTING ENDPOINT: Generate presigned upload URL and create document record - KEPT FOR COMPATIBILITY"""
     try:
-        # Check usage limits before allowing upload
-        await check_user_limits(user["user_id"])
-        
         if style not in VALID_STYLES:
             raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(VALID_STYLES)}")
         
@@ -660,9 +628,6 @@ async def process_document(
 ):
     """Process a document with formatting (legacy endpoint for backward compatibility)"""
     try:
-        # Check usage limits before allowing processing
-        await check_user_limits(user["user_id"])
-        
         job_id = str(uuid.uuid4())
         
         file_path = f"legacy/{user['user_id']}/{job_id}.docx"
