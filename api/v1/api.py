@@ -388,11 +388,6 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
             formatting_time=duration
         )
         
-        # 8. Track usage
-        await track_document_usage(user_id)
-        original_file_size_mb = len(file_content) / (1024 * 1024)
-        await track_storage_usage(user_id, original_file_size_mb)
-        
         logger.info(f"Job {job_id} completed successfully.")
 
     except Exception as e:
