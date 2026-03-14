@@ -11,5 +11,4 @@ openai
 httpx
 supabase
 PyJWT
-PySide6
 winsound
