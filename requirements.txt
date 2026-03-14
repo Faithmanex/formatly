@@ -11,4 +11,3 @@ openai
 httpx
 supabase
 PyJWT
-winsound
