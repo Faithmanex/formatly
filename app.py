@@ -35,7 +35,6 @@ from dotenv import load_dotenv
 from pathlib import Path
 import argparse
 import json5
-import winsound
 import logging
 
 # Configure logging
@@ -1869,12 +1868,10 @@ def main():
             if args.track_changes:
                 print(f"✅ Document formatted with Tracked Changes successfully: {output_path}")
                 # Play a sound to indicate completion
-                winsound.PlaySound("Beep", winsound.SND_ALIAS)
                 track_changes(input_path, output_path)
             else:
                 print(f"✅ Document formatted successfully: {output_path}")
                 # Play a sound to indicate completion
-                winsound.PlaySound("Beep", winsound.SND_ALIAS)
                 os.startfile(output_path)
                 
     except Exception as e:

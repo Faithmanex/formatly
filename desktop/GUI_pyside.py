@@ -17,7 +17,6 @@ import os
 import json
 import threading
 import time
-import winsound
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -347,7 +346,6 @@ class Bridge(QObject):
                 "success"
             )
             
-            winsound.MessageBeep(winsound.MB_OK)
             self.formattingFinished.emit(True, "Document formatted successfully!", str(output_path))
 
         except Exception as e:

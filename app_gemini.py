@@ -6,7 +6,6 @@ from utils.auto_corrector import AutoCorrector
 from utils.formatting_analyzer import FormattingAnalyzer
 import os
 import argparse
-import winsound
 import traceback
 from pathlib import Path
 from docx import Document
@@ -247,11 +246,9 @@ def main():
 
             if args.track_changes:
                 print(f"✅ Document formatted with Tracked Changes successfully: {output_path}")
-                winsound.PlaySound("Beep", winsound.SND_ALIAS)
                 track_changes(input_path, output_path)
             else:
                 print(f"✅ Document formatted successfully: {output_path}")
-                winsound.PlaySound("Beep", winsound.SND_ALIAS)
                 if os.name == 'nt':
                      os.startfile(output_path)
                 
