@@ -38,7 +38,9 @@ from core.api_clients import HuggingFaceClient, GeminiClient
 from core.style_guides import STYLE_GUIDES
 from utils.track_changes import TrackChanges
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
+from utils.api_key_manager import api_key_manager as _akm
+_akm._load_api_keys()
 
 DATA_FILE = "user_data.json"
 

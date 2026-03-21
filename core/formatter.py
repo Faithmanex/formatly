@@ -409,7 +409,7 @@ class AdvancedFormatter:
         self._deduplicate_consecutive_headings(doc, doc_structure)
         self._join_headings(doc, doc_structure)
 
-        self._format_content_in_place(doc, doc_structure, has_title_page, title_page_boundary)
+        self._format_content_in_place(doc, doc_structure, has_title_page, title_end_idx)
 
         self._format_references(doc, doc_structure)
 
@@ -423,7 +423,7 @@ class AdvancedFormatter:
         
         self._apply_inline_formatting(doc)
 
-        self._remove_blank_lines(doc, title_page_boundary)
+        self._remove_blank_lines(doc, title_end_idx)
 
         output_path_obj = Path(output_path)
         final_output_path = str(output_path_obj)
@@ -765,16 +765,31 @@ class AdvancedFormatter:
             section_for_fm = None
 
         if has_title_page and page_numbering and section_for_fm:
-             fm_pos = page_numbering.get("front_matter_position", "center")
-             container1 = section_for_fm.header if "header" in fm_pos else section_for_fm.footer
-             p1 = container1.paragraphs[0] if container1.paragraphs else container1.add_paragraph()
-             p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in fm_pos else (WD_ALIGN_PARAGRAPH.CENTER if "center" in fm_pos else WD_ALIGN_PARAGRAPH.LEFT)
-             self._insert_page_field_to_paragraph(p1)
+            fm_pos = page_numbering.get("front_matter_position", "center")
+            use_header_fm = "header" in fm_pos
+            active_fm = section_for_fm.header if use_header_fm else section_for_fm.footer
+            inactive_fm = section_for_fm.footer if use_header_fm else section_for_fm.header
+            self._clear_container(inactive_fm)
+            p1 = active_fm.paragraphs[0] if active_fm.paragraphs else active_fm.add_paragraph()
+            p1.clear()
+            p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in fm_pos else (WD_ALIGN_PARAGRAPH.CENTER if "center" in fm_pos else WD_ALIGN_PARAGRAPH.LEFT)
+            self._insert_page_field_to_paragraph(p1)
 
-        container = section_for_numbering.header if "header" in position else section_for_numbering.footer
-        p_body = container.paragraphs[0] if container.paragraphs else container.add_paragraph()
+        use_header_body = "header" in position
+        active_body = section_for_numbering.header if use_header_body else section_for_numbering.footer
+        inactive_body = section_for_numbering.footer if use_header_body else section_for_numbering.header
+        self._clear_container(inactive_body)
+        p_body = active_body.paragraphs[0] if active_body.paragraphs else active_body.add_paragraph()
+        p_body.clear()
         p_body.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in position else (WD_ALIGN_PARAGRAPH.CENTER if "center" in position else WD_ALIGN_PARAGRAPH.LEFT)
         self._insert_page_field_to_paragraph(p_body)
+
+    def _clear_container(self, container):
+        """Strip all runs and field elements from every paragraph in a header/footer."""
+        for p in container.paragraphs:
+            for child in list(p._p):
+                if child.tag != qn('w:pPr'):
+                    p._p.remove(child)
 
     def _insert_page_field_to_paragraph(self, paragraph):
          run = paragraph.add_run()
@@ -813,12 +828,19 @@ class AdvancedFormatter:
         
         title_end_content = blocks[last_title_idx].get("content", "").strip() if last_title_idx != -1 else None
              
-        # Heuristic 2: Find start of body: usually first heading_1 that is not front matter
+        # Heuristic 2: Find start of body: usually first heading_1 that is not front matter.
+        # Note: Alternatively, the AI prompt can declare "section": "front_matter"/"body" explicitly.
+        # But this hybrid approach remains more robust to minor border-line AI classification drift in streams.
         body_start_content = None
         for b in blocks:
-             t = b.get("type")
+             t = b.get("type", "")
              content = b.get("content", "").lower()
-             if t == "heading_1" and not any(f in content for f in ["dedication", "preface", "contents", "abstract"]):
+             
+             # Check if front matter by type or content
+             is_front_matter = any(f in t.lower() for f in ["dedication", "preface", "contents", "abstract", "toc"]) or \
+                               any(f in content for f in ["dedication", "preface", "contents", "abstract"])
+                               
+             if t == "heading_1" and not is_front_matter:
                   body_start_content = b.get("content", "").strip()
                   break
                   
