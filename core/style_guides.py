@@ -63,6 +63,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -1114,6 +1178,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -2151,6 +2279,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -3187,6 +3379,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -4228,6 +4484,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {

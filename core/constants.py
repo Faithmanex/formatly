@@ -18,11 +18,13 @@ STYLE_MAPPINGS = {
     "preface_body": "Preface Body",
     "epigraph": "Epigraph",
     "keywords": "Keywords",
+    "copyright": "Copyright",
+    "certification": "Certification",
 
     # Key Section Headings
     "abstract_heading": "Abstract Heading", 
     "references_heading": "References Heading",
-    "table_of_contents_heading": "Heading 1",
+    "table_of_contents_heading": "TOC Heading",
     "appendix_heading": "Appendix Title",
     "appendices_heading": "Appendices Title",
     "heading_1": "Heading 1",
@@ -34,7 +36,7 @@ STYLE_MAPPINGS = {
     # Content Types
     "abstract_text": "Abstract",
     "body": "Normal",
-    "table_of_contents_item": "Normal",
+    "table_of_contents_item": "TOC Item",
     "reference_list_item": "References",
     "appendix_text": "Normal",
     "list_item_number": "List Number",

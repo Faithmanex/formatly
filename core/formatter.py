@@ -150,8 +150,8 @@ STEP 5 — APPENDIX CLASSIFICATION
 STEP 6 — FULL BLOCK TYPE REFERENCE
 ═══════════════════════════════════════════════════════
 TITLE PAGE ELEMENTS
-  title               — Main title of the work
-  title_byline        — Subtitle or byline beneath the title
+  title               — Main title of the work (if the title is split across multiple lines, classify all parts as 'title')
+  title_byline        — A distinctly different byline beneath the title (e.g. "A Thesis Submitted by"), NOT a subtitle
   author              — Author name(s)
   institution         — University or organisation name
   title_department    — Department or faculty name
@@ -174,6 +174,8 @@ FRONT MATTER
   preface_body             — Preface body paragraph(s)
   table_of_contents_heading — Title like "Table of Contents" or "Contents"
   table_of_contents_item    — An entry in the table of contents
+  certification            — Statements of certification (e.g., "This is to certify that...", "has been approved")
+  copyright                — Copyright lines (e.g., "Copyright © X", "All rights reserved")
 
 HEADINGS
   heading_1 — Top-level chapter or section heading
