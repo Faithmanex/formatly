@@ -17,7 +17,6 @@ import os
 import json
 import threading
 import time
-import winsound
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -39,7 +38,9 @@ from core.api_clients import HuggingFaceClient, GeminiClient
 from core.style_guides import STYLE_GUIDES
 from utils.track_changes import TrackChanges
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
+from utils.api_key_manager import api_key_manager as _akm
+_akm._load_api_keys()
 
 DATA_FILE = "user_data.json"
 
@@ -347,7 +348,6 @@ class Bridge(QObject):
                 "success"
             )
             
-            winsound.MessageBeep(winsound.MB_OK)
             self.formattingFinished.emit(True, "Document formatted successfully!", str(output_path))
 
         except Exception as e:

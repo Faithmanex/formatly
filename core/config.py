@@ -107,7 +107,7 @@ config = Config()
 SUPPORTED_FORMATS = [".docx"]
 
 # Supported citation styles
-SUPPORTED_STYLES = ["apa", "mla", "chicago"]
+SUPPORTED_STYLES = ["apa", "mla", "chicago", "turabian"]
 
 # Default settings
 DEFAULT_STYLE = "apa"
