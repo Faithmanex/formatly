@@ -172,6 +172,8 @@ FRONT MATTER
   acknowledgement_body     — Acknowledgements body paragraph(s)
   preface_heading          — The word "Preface"
   preface_body             — Preface body paragraph(s)
+  table_of_contents_heading — Title like "Table of Contents" or "Contents"
+  table_of_contents_item    — An entry in the table of contents
 
 HEADINGS
   heading_1 — Top-level chapter or section heading
@@ -401,7 +403,8 @@ class AdvancedFormatter:
         paragraphs_text = [p.text for p in doc.paragraphs]
         doc_structure, usage_stats = self._detect_paragraph_types(paragraphs_text)
 
-        has_title_page, title_page_boundary = self._detect_and_manage_title_page(doc, doc_structure)
+        has_title_page, title_end_idx, body_start_idx = self._detect_and_manage_title_page(doc, doc_structure)
+        self._add_page_numbers(doc, has_title_page, title_end_idx, body_start_idx)
 
         self._deduplicate_consecutive_headings(doc, doc_structure)
         self._join_headings(doc, doc_structure)
@@ -690,12 +693,146 @@ class AdvancedFormatter:
                 traceback.print_exc()
                 raise ValueError(error_msg) from e
 
+    def _add_page_numbers(self, doc, has_title_page, title_end_idx, body_start_idx):
+        from copy import deepcopy
+        
+        meta = self.selected_style_guide["meta"]
+        page_numbering = meta.get("page_numbering")
+        position = meta.get("page_numbers") if not page_numbering else page_numbering.get("body_position")
+        
+        if not position and not page_numbering:
+            return
+
+        if has_title_page:
+            # Step A: Split Section 1 (Title) and Section 2 (Front Matter)
+            if title_end_idx > 0 and title_end_idx < len(doc.paragraphs):
+                p_fm_start = doc.paragraphs[title_end_idx - 1]
+                pPr = p_fm_start._p.get_or_add_pPr()
+                if not pPr.xpath('w:sectPr'):
+                    pPr.append(deepcopy(doc.sections[0]._sectPr))
+
+            # Step B: Split Section 2 (Front Matter) and Section 3 (Body)
+            if body_start_idx > title_end_idx and body_start_idx < len(doc.paragraphs):
+                p_body_start = doc.paragraphs[body_start_idx - 1]
+                pPr = p_body_start._p.get_or_add_pPr()
+                if not pPr.xpath('w:sectPr'):
+                    pPr.append(deepcopy(doc.sections[-1]._sectPr))
+
+            title_section = doc.sections[0]
+            title_section.different_first_page_header_footer = True
+            for container in [title_section.first_page_header, title_section.first_page_footer]:
+                for p in list(container.paragraphs):
+                    p._element.getparent().remove(p._element)
+
+            if len(doc.sections) >= 3:
+                fm_section = doc.sections[1]
+                body_section = doc.sections[2]
+                
+                if page_numbering:
+                    fm_format = page_numbering.get("front_matter_format", "decimal")
+                    pgNumType_fm = fm_section._sectPr.find(qn('w:pgNumType'))
+                    if pgNumType_fm is None:
+                        pgNumType_fm = OxmlElement('w:pgNumType')
+                        fm_section._sectPr.append(pgNumType_fm)
+                    pgNumType_fm.set(qn('w:fmt'), 'lowerRoman' if fm_format == 'roman' else ('decimal' if fm_format == 'arabic' else fm_format))
+
+                pgNumType_body = body_section._sectPr.find(qn('w:pgNumType'))
+                if pgNumType_body is None:
+                    pgNumType_body = OxmlElement('w:pgNumType')
+                    body_section._sectPr.append(pgNumType_body)
+                pgNumType_body.set(qn('w:start'), '1')
+                body_fmt = page_numbering.get("body_format", "decimal") if page_numbering else "decimal"
+                pgNumType_body.set(qn('w:fmt'), 'decimal' if body_fmt == 'arabic' else body_fmt)
+                
+                section_for_numbering = body_section
+                section_for_fm = fm_section
+                
+            elif len(doc.sections) == 2: 
+                body_section = doc.sections[1]
+                pgNumType = body_section._sectPr.find(qn('w:pgNumType'))
+                if pgNumType is None:
+                    pgNumType = OxmlElement('w:pgNumType')
+                    body_section._sectPr.append(pgNumType)
+                pgNumType.set(qn('w:start'), '1')
+                pgNumType.set(qn('w:fmt'), 'decimal')
+                section_for_numbering = body_section
+                section_for_fm = None
+            else:
+                section_for_numbering = doc.sections[0]
+                section_for_fm = None
+        else:
+            section_for_numbering = doc.sections[0]
+            section_for_fm = None
+
+        if has_title_page and page_numbering and section_for_fm:
+             fm_pos = page_numbering.get("front_matter_position", "center")
+             container1 = section_for_fm.header if "header" in fm_pos else section_for_fm.footer
+             p1 = container1.paragraphs[0] if container1.paragraphs else container1.add_paragraph()
+             p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in fm_pos else (WD_ALIGN_PARAGRAPH.CENTER if "center" in fm_pos else WD_ALIGN_PARAGRAPH.LEFT)
+             self._insert_page_field_to_paragraph(p1)
+
+        container = section_for_numbering.header if "header" in position else section_for_numbering.footer
+        p_body = container.paragraphs[0] if container.paragraphs else container.add_paragraph()
+        p_body.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in position else (WD_ALIGN_PARAGRAPH.CENTER if "center" in position else WD_ALIGN_PARAGRAPH.LEFT)
+        self._insert_page_field_to_paragraph(p_body)
+
+    def _insert_page_field_to_paragraph(self, paragraph):
+         run = paragraph.add_run()
+         fldChar_begin = OxmlElement('w:fldChar')
+         fldChar_begin.set(qn('w:fldCharType'), 'begin')
+         instrText = OxmlElement('w:instrText')
+         instrText.set(qn('xml:space'), 'preserve')
+         instrText.text = "PAGE"
+         fldChar_end = OxmlElement('w:fldChar')
+         fldChar_end.set(qn('w:fldCharType'), 'end')
+         run._r.extend([fldChar_begin, instrText, fldChar_end])
+
     def _detect_and_manage_title_page(self, doc, doc_structure):
         """
-        No-op for Linear Block Schema.
-        Returns False, 0 to treat everything as standard blocks.
+        Detects Title Page & Front matter breakout dynamically by scanning document block types.
+        Returns has_title_page (bool), title_end_idx (int), body_start_idx (int).
         """
-        return False, 0
+        blocks = doc_structure.get("blocks", [])
+        if not blocks:
+            return False, 0, 0
+            
+        title_styles = {
+            "title", "author", "institution", "course", "instructor", "due_date", 
+            "registration_number", "degree", "title_department", "title_byline"
+        }
+        
+        has_title = any(b.get("type") in title_styles for b in blocks[:10])
+        if not has_title:
+             return False, 0, 0
+             
+        # Heuristic 1: Find end of Title Page (Last title element position)
+        last_title_idx = -1
+        for i, b in enumerate(blocks):
+             if b.get("type") in title_styles:
+                  last_title_idx = i
+        
+        title_end_content = blocks[last_title_idx].get("content", "").strip() if last_title_idx != -1 else None
+             
+        # Heuristic 2: Find start of body: usually first heading_1 that is not front matter
+        body_start_content = None
+        for b in blocks:
+             t = b.get("type")
+             content = b.get("content", "").lower()
+             if t == "heading_1" and not any(f in content for f in ["dedication", "preface", "contents", "abstract"]):
+                  body_start_content = b.get("content", "").strip()
+                  break
+                  
+        title_end_idx = 0
+        body_start_idx = len(doc.paragraphs) if body_start_content else 0
+        for idx, p in enumerate(doc.paragraphs):
+             text = p.text.strip()
+             if title_end_content and text == title_end_content:
+                  title_end_idx = idx + 1 # Endpoint is paragraph AFTER the item
+             if body_start_content and text == body_start_content:
+                  body_start_idx = idx
+                  break
+                  
+        return True, title_end_idx, body_start_idx
 
     # -------------------------------------------------------------------------
     # Heading deduplication
@@ -739,6 +876,7 @@ class AdvancedFormatter:
                 "appendix_heading", "appendices_heading",
                 "abstract_heading", "acknowledgements_heading",
                 "dedication_heading", "preface_heading", "references_heading",
+                "table_of_contents_heading",
             }
 
             if (

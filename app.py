@@ -45,6 +45,8 @@ class APIManager:
     
     def __init__(self):
         load_dotenv()
+        from utils.api_key_manager import api_key_manager
+        api_key_manager._load_api_keys()
         self.api_key = os.getenv("GEMINI_API_KEY")
         self.model_name = os.getenv("GEMINI_MODEL")
         self.rate_limit_manager = RateLimitManager(self.model_name)
@@ -402,7 +404,7 @@ class AdvancedFormatter:
         has_title_page, title_page_boundary = self._detect_and_manage_title_page(doc, doc_structure)
 
         # Step 4: Add page numbers based on title page presence
-        # self._add_page_numbers(doc, has_title_page, title_page_boundary)
+        self._add_page_numbers(doc, has_title_page, title_page_boundary)
 
         # Step 5: Join split headings (e.g., CHAPTER X + Title)
         self._join_headings(doc, doc_structure)
@@ -688,7 +690,7 @@ class AdvancedFormatter:
                 # Get model WITH system instruction
                 model_with_system = self.api_manager.get_model(system_instruction=system_prompt)
                 
-                print("\n🤖 AI Response...\n")
+                print("\nAI Response...\n")
                 
                 response = model_with_system.generate_content(
                     user_prompt,
@@ -725,10 +727,43 @@ class AdvancedFormatter:
 
     def _detect_and_manage_title_page(self, doc, doc_structure):
         """
-        No-op for Linear Block Schema.
-        Returns False, 0 to treat everything as standard blocks.
+        Detects Title Page & Front Matter by scanning document block types.
+        Returns has_title_page (bool), boundary_idx (int) where Body starts.
         """
-        return False, 0
+        blocks = doc_structure.get("blocks", [])
+        if not blocks:
+            return False, 0
+            
+        title_styles = {
+            "title", "author", "institution", "course", "instructor", "due_date", 
+            "registration_number", "degree", "title_department", "title_byline"
+        }
+        
+        has_title = any(b.get("type") in title_styles for b in blocks[:10])
+        if not has_title:
+             return False, 0
+             
+        # Find start of body: usually first heading_1 that is not front matter
+        body_start_content = None
+        for b in blocks:
+             t = b.get("type")
+             content = b.get("content", "").lower()
+             if t == "heading_1" and not any(f in content for f in ["dedication", "preface", "contents", "abstract"]):
+                  body_start_content = b.get("content", "").strip()
+                  break
+                  
+        if not body_start_content:
+             # Fallback: boundary_idx around first continuous Normal text block
+             return True, 5 # Fixed fallback offset
+             
+        # Map back to doc.paragraphs to find index
+        boundary_idx = 0
+        for idx, p in enumerate(doc.paragraphs):
+             if p.text.strip() == body_start_content:
+                  boundary_idx = idx
+                  break
+                  
+        return True, boundary_idx
 
     def _join_headings(self, doc, doc_structure):
         """
@@ -1529,73 +1564,86 @@ class AdvancedFormatter:
     def _add_page_numbers(self, doc, has_title_page, title_page_boundary):
         from copy import deepcopy
         
-        position = self.selected_style_guide["meta"].get("page_numbers")
-        if not position:
+        meta = self.selected_style_guide["meta"]
+        page_numbering = meta.get("page_numbering")
+        position = meta.get("page_numbers") if not page_numbering else page_numbering.get("body_position")
+        
+        if not position and not page_numbering:
             return
 
         if has_title_page:
-            # 1. Ensure document has at least two sections for title page and body.
+            # 1. Ensure document has at least two sections for title/front matter and body.
             if len(doc.sections) == 1 and title_page_boundary > 0:
-                # Add a section break by inserting section properties into the last paragraph of the title page.
                 last_para_of_title = doc.paragraphs[title_page_boundary - 1]
                 pPr = last_para_of_title._p.get_or_add_pPr()
+                # Apply Section Break properties to separate sections
                 pPr.append(deepcopy(doc.sections[0]._sectPr))
 
-            # 2. Configure sections.
-            # Section 1 (Title Page): Unnumbered.
             title_section = doc.sections[0]
             title_section.different_first_page_header_footer = True
-            # Clear headers/footers for the title page itself.
+            
+            # Clear first page headers/footers to hide numbers on Title Page (Page 1)
             for container in [title_section.first_page_header, title_section.first_page_footer]:
                 for p in list(container.paragraphs):
                     p._element.getparent().remove(p._element)
 
-            # Section 2 (Body): Starts numbering at 1.
             if len(doc.sections) > 1:
                 body_section = doc.sections[1]
-                # Set page number to start at 1 and use Arabic numerals.
-                pgNumType = body_section._sectPr.get_or_add_pgNumType()
+                pgNumType = body_section._sectPr.find(qn('w:pgNumType'))
+                if pgNumType is None:
+                    pgNumType = OxmlElement('w:pgNumType')
+                    body_section._sectPr.append(pgNumType)
                 pgNumType.set(qn('w:start'), '1')
-                pgNumType.set(qn('w:fmt'), 'decimal')
+                body_fmt = page_numbering.get("body_format", "decimal") if page_numbering else "decimal"
+                pgNumType.set(qn('w:fmt'), 'decimal' if body_fmt == 'arabic' else body_fmt)
                 section_for_numbering = body_section
             else:
-                # Fallback if section break failed; use primary header of the first section.
                 section_for_numbering = doc.sections[0]
+                
+            # Configure Front Matter numbering in Section 1 if layout demands it
+            if page_numbering:
+                 fm_format = page_numbering.get("front_matter_format", "decimal")
+                 pgNumType1 = title_section._sectPr.find(qn('w:pgNumType'))
+                 if pgNumType1 is None:
+                     pgNumType1 = OxmlElement('w:pgNumType')
+                     title_section._sectPr.append(pgNumType1)
+                 pgNumType1.set(qn('w:start'), '1')
+                 pgNumType1.set(qn('w:fmt'), 'lowerRoman' if fm_format == 'roman' else ('decimal' if fm_format == 'arabic' else fm_format))
         else:
-            # Document has no title page; use the first and only section.
             section_for_numbering = doc.sections[0]
 
-        # 3. Add page number field to the correct container.
-        if "header" in position:
-            container = section_for_numbering.header
-        elif "footer" in position:
-            container = section_for_numbering.footer
-        else:
-            return  # Unknown position.
+        # 3. Add Front Matter page numbers to Section 1 if position defined
+        if has_title_page and page_numbering and len(doc.sections) > 1:
+             fm_pos = page_numbering.get("front_matter_position", "center")
+             container1 = title_section.header if "header" in fm_pos else title_section.footer
+             for p in list(container1.paragraphs):
+                  p._element.getparent().remove(p._element)
+             p1 = container1.add_paragraph()
+             p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in fm_pos else (WD_ALIGN_PARAGRAPH.CENTER if "center" in fm_pos else WD_ALIGN_PARAGRAPH.LEFT)
+             self._insert_page_field_to_paragraph(p1)
 
-        # Clear any existing content from the target container.
+        # 3b. Add Page Number to Body Section
+        container = section_for_numbering.header if "header" in position else section_for_numbering.footer
         for p in list(container.paragraphs):
             p._element.getparent().remove(p._element)
 
         paragraph = container.add_paragraph()
-        
-        if "right" in position:
-            paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        elif "center" in position:
-            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        else:
-            paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        
-        # 4. Insert the PAGE field using OXML elements.
-        run = paragraph.add_run()
-        fldChar_begin = OxmlElement('w:fldChar')
-        fldChar_begin.set(qn('w:fldCharType'), 'begin')
-        instrText = OxmlElement('w:instrText')
-        instrText.set(qn('xml:space'), 'preserve')
-        instrText.text = "PAGE"
-        fldChar_end = OxmlElement('w:fldChar')
-        fldChar_end.set(qn('w:fldCharType'), 'end')
-        run._r.extend([fldChar_begin, instrText, fldChar_end])
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in position else (WD_ALIGN_PARAGRAPH.CENTER if "center" in position else WD_ALIGN_PARAGRAPH.LEFT)
+        self._insert_page_field_to_paragraph(paragraph)
+
+    def _insert_page_field_to_paragraph(self, paragraph):
+         # Helper to insert PAGE field OXML node
+         from docx.oxml.shared import qn
+         from docx.oxml import OxmlElement
+         run = paragraph.add_run()
+         fldChar_begin = OxmlElement('w:fldChar')
+         fldChar_begin.set(qn('w:fldCharType'), 'begin')
+         instrText = OxmlElement('w:instrText')
+         instrText.set(qn('xml:space'), 'preserve')
+         instrText.text = "PAGE"
+         fldChar_end = OxmlElement('w:fldChar')
+         fldChar_end.set(qn('w:fldCharType'), 'end')
+         run._r.extend([fldChar_begin, instrText, fldChar_end])
 
 
 
@@ -1833,7 +1881,7 @@ def main():
                     del gemini_corrector
         
         elif args.format:
-            print(f"🎨 Applying formatting only (skipping error correction): {input_path}")
+            print(f"Applying formatting only (skipping error correction): {input_path}")
             # No spelling/grammar checks or corrections are performed in this mode.
             # The document object 'doc' remains as loaded from input_path.
             
@@ -1845,8 +1893,9 @@ def main():
             #     print("Please add your Gemini API key to the .env file.")
             #     return 1
             
-            print(f"📝 Formatting document: {input_path}")
-            print(f"🎨 Style: {style_name.upper()}, English: {args.english.capitalize()}")
+            print(f"Formatting document: {input_path}")
+    
+            print(f"Style: {style_name.upper()}, English: {args.english.capitalize()}")
             
             formatter = AdvancedFormatter(style_name)
             # Propagate MLA-specific options to the formatter

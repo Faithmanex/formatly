@@ -25,6 +25,12 @@ MODEL_QUOTAS = {
         "max_tokens": 120000,
         "tpm": 250000
     },
+    "gemini-3-flash-preview": {
+        "rpm": 15,
+        "rpd": 200,
+        "max_tokens": 120000,
+        "tpm": 1000000
+    },
     "gemini-2.5-flash-lite": {
         "rpm": 10,
         "rpd": 20,
@@ -107,7 +113,7 @@ config = Config()
 SUPPORTED_FORMATS = [".docx"]
 
 # Supported citation styles
-SUPPORTED_STYLES = ["apa", "mla", "chicago"]
+SUPPORTED_STYLES = ["apa", "mla", "chicago", "turabian"]
 
 # Default settings
 DEFAULT_STYLE = "apa"
