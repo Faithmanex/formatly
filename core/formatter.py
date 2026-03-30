@@ -780,18 +780,23 @@ class AdvancedFormatter:
         use_header_body = "header" in position
         active_body = section_for_numbering.header if use_header_body else section_for_numbering.footer
         inactive_body = section_for_numbering.footer if use_header_body else section_for_numbering.header
+        
+        # Clear BOTH containers to be safe (inactive and active)
         self._clear_container(inactive_body)
+        self._clear_container(active_body)
+        
         p_body = active_body.paragraphs[0] if active_body.paragraphs else active_body.add_paragraph()
         p_body.clear()
         p_body.alignment = WD_ALIGN_PARAGRAPH.RIGHT if "right" in position else (WD_ALIGN_PARAGRAPH.CENTER if "center" in position else WD_ALIGN_PARAGRAPH.LEFT)
         self._insert_page_field_to_paragraph(p_body)
 
     def _clear_container(self, container):
-        """Strip all runs and field elements from every paragraph in a header/footer."""
-        for p in container.paragraphs:
-            for child in list(p._p):
-                if child.tag != qn('w:pPr'):
-                    p._p.remove(child)
+        """Strip all paragraphs and content from a header/footer."""
+        # container._element is the <w:hdr> or <w:ftr> element
+        for child in list(container._element):
+            # Keep the paragraph structure if we want but Word is fine if we clear it 
+            # and then add_paragraph() later.
+            container._element.remove(child)
 
     def _insert_page_field_to_paragraph(self, paragraph):
          run = paragraph.add_run()
@@ -1458,6 +1463,10 @@ class AdvancedFormatter:
             para_config = style_config["paragraph"]
             para_format = paragraph.paragraph_format
             
+            # Special handling for lists to prevent unwanted inheritance from 'Normal' (0.5" indent)
+            # if they fell back or are being inconsistently applied.
+            is_list_item = style_name in {"List Bullet", "List Number", "List Item", "List Alphabet"}
+            
             if "alignment" in para_config:
                 alignment = para_config["alignment"]
                 if style_name == "Appendix Title" and has_master_appendices:
@@ -1469,6 +1478,14 @@ class AdvancedFormatter:
                 para_format.right_indent = para_config["right_indent"]
             if "first_line_indent" in para_config:
                 para_format.first_line_indent = para_config["first_line_indent"]
+            
+            # If this is a list item but the style guide doesn't specify indents 
+            # (or we're falling back), ensure we use standard list indent.
+            if is_list_item:
+                if "left_indent" not in para_config:
+                    para_format.left_indent = Inches(0.25)
+                if "first_line_indent" not in para_config:
+                    para_format.first_line_indent = Inches(-0.25)
 
             if "space_before" in para_config:
                 para_format.space_before = para_config["space_before"]
