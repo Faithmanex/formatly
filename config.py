@@ -13,41 +13,53 @@ load_dotenv()
 
 # Model quotas and limitations
 MODEL_QUOTAS = {
-    "gemini-2.5-pro": {
-        "rpm": 5,
-        "rpd": 100,
-        "max_tokens": 120000,
-        "tpm": 250000
-    },
-    "gemini-2.5-flash": {
-        "rpm": 5,
-        "rpd": 20,
-        "max_tokens": 120000,
-        "tpm": 250000
-    },
-    "gemini-3-flash-preview": {
-        "rpm": 15,
-        "rpd": 200,
-        "max_tokens": 120000,
-        "tpm": 1000000
-    },
-    "gemini-2.5-flash-lite": {
-        "rpm": 10,
-        "rpd": 20,
-        "max_tokens": 120000,
-        "tpm": 250000
-    },
     "gemini-2.0-flash": {
-        "rpm": 15,
-        "rpd": 200,
-        "max_tokens": 20000,
-        "tpm": 1000000
+        "rpm": 2000,
+        "tpm": 4000000,
+        "rpd": 1000000,  # Unlimited
+        "max_tokens": 120000
     },
     "gemini-2.0-flash-lite": {
-        "rpm": 30,
-        "rpd": 200,
-        "max_tokens": 20000,
-        "tpm": 1000000
+        "rpm": 4000,
+        "tpm": 4000000,
+        "rpd": 1000000,  # Unlimited
+        "max_tokens": 120000
+    },
+    "gemini-2.5-flash": {
+        "rpm": 1000,
+        "tpm": 1000000,
+        "rpd": 10000,
+        "max_tokens": 120000
+    },
+    "gemini-2.5-flash-lite": {
+        "rpm": 4000,
+        "tpm": 4000000,
+        "rpd": 1000000,  # Unlimited
+        "max_tokens": 120000
+    },
+    "gemini-2.5-pro": {
+        "rpm": 150,
+        "tpm": 2000000,
+        "rpd": 1000,
+        "max_tokens": 120000
+    },
+    "gemini-3-flash": {
+        "rpm": 1000,
+        "tpm": 2000000,
+        "rpd": 10000,
+        "max_tokens": 120000
+    },
+    "gemini-3.1-flash-lite": {
+        "rpm": 4000,
+        "tpm": 4000000,
+        "rpd": 150000,
+        "max_tokens": 120000
+    },
+    "gemini-3.1-pro": {
+        "rpm": 25,
+        "tpm": 2000000,
+        "rpd": 250,
+        "max_tokens": 120000
     },
     "llama-3.1-8b-instant": {
         "rpm": 5,
@@ -56,12 +68,6 @@ MODEL_QUOTAS = {
         "tpm": 250000
     },
     "deepseek-ai/DeepSeek-V3.2:novita": {
-        "rpm": 5,
-        "rpd": 100,
-        "max_tokens": 120000,
-        "tpm": 250000
-    },
-    "gemini-3-flash": {
         "rpm": 5,
         "rpd": 100,
         "max_tokens": 120000,
