@@ -1,0 +1,217 @@
+/* Gemini UI Styles */
+.chat-welcome-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    animation: fadeInSlideUp 0.5s ease;
+}
+
+.welcome-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    align-self: flex-start; /* Align to start of container width if we want, but image shows centered/left-ish. Let's stick to centering for main container but maybe text align left? Image has top left greeting. */
+    width: 100%;
+    max-width: 800px;
+}
+
+.sparkle-icon {
+    font-size: 24px;
+    background: linear-gradient(135deg, #4285f4, #9b72cb, #ea4335);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.greeting-text {
+    font-size: 24px;
+    color: #e3e3e3;
+    font-weight: 400;
+}
+
+.welcome-headline {
+    font-size: 44px;
+    font-weight: 500;
+    color: #e3e3e3; /* Slightly off-white */
+    margin-bottom: 48px;
+    text-align: left;
+    width: 100%;
+    max-width: 800px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+/* Centered Input Box */
+.chat-input-centered {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 32px;
+}
+
+.chat-input-box {
+    background-color: var(--gemini-bg, #1e1f20);
+    border-radius: 28px; /* Large rounded corners */
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 120px; /* Taller box */
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.chat-input-box:focus-within {
+    background-color: #2b2c2d;
+}
+
+.chat-input-box textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #e3e3e3;
+    font-size: 16px;
+    resize: none;
+    outline: none;
+    margin-bottom: 40px; /* Space for bottom actions */
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.chat-input-box textarea::placeholder {
+  color: #8e8e8e;
+}
+
+/* Input Actions */
+.input-actions-left {
+    position: absolute;
+    bottom: 16px;
+    left: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.input-actions-right {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.icon-btn-sm {
+    background: none;
+    border: none;
+    color: #c4c7c5;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn-sm:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.icon-btn-pill {
+    background: none;
+    border: 1px solid transparent;
+    color: #c4c7c5;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.icon-btn-pill:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.icon-btn-filled {
+     width: 32px;
+     height: 32px;
+     border-radius: 50%;
+     background: white;
+     color: black;
+     border: none;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     transition: transform 0.2s;
+}
+
+.icon-btn-filled:hover {
+    transform: scale(1.05);
+}
+
+/* Quick Action Pills */
+.quick-actions-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 800px;
+    flex-wrap: wrap;
+}
+
+.quick-action-pill {
+    background-color: var(--pill-bg, #2b2c2d);
+    border: 1px solid rgba(255,255,255,0.05);
+    color: #e3e3e3;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.quick-action-pill:hover {
+    background-color: var(--pill-hover, #3c3d3e);
+}
+
+/* Interface Mode (Active Chat) */
+.chat-interface {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-input-area.interface-mode {
+    padding: 24px;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+}
+
+.chat-input-area.interface-mode .chat-input-box {
+    width: 100%;
+    max-width: 800px;
+    min-height: 60px; /* Smaller in chat mode */
+    border-radius: 30px;
+}
+
+.chat-input-area.interface-mode textarea {
+    margin-bottom: 0;
+    padding-right: 48px; /* space for send btn */
+    height: 24px; /* Init height */
+}
+
+.chat-input-area.interface-mode .input-actions-right {
+    bottom: 8px;
+    right: 8px;
+}

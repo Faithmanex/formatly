@@ -1,0 +1,48 @@
+# Deployment
+.vercel
+.antigravity
+.agent
+
+# Environment variables (contains sensitive API keys)
+.env
+desktop/.env
+api/v1/.env
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and debug files
+logs/
+*.log
+debug_output.txt
+debug*.txt
+theme_debug.log
+
+# User data (contains usage history and preferences)
+user_data.json
+desktop/user_data.json
+formatting_stats.csv
+desktop/formatting_stats.csv
+
+# Build artifacts
+dist/
+build/
+*.spec
+
+# Test and development folders
+tests/
+misc/
+documents/
+formatted/
+Style Manuals/
+tmp/
+
+# WebView data
+**/.webview_data/
+
+# IDE
+.vscode/
+.idea/

@@ -5,11 +5,15 @@ Analyzes citations, headings, references, margins, spacing, and other formatting
 """
 
 import re
+import logging
 from typing import List, Dict, Tuple, Optional
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-from style_guides import STYLE_GUIDES
+from core.style_guides import STYLE_GUIDES
+from core.validators import validate_margins, validate_fonts, validate_spacing
+
+logger = logging.getLogger(__name__)
 
 class FormattingAnalyzer:
     """
@@ -113,7 +117,11 @@ class FormattingAnalyzer:
             return False
         
         # Check if first page contains typical title page elements
-        title_indicators = ["title:", "author:", "course:", "professor:", "date:"]
+        title_indicators = [
+            "title:", "author:", "course:", "professor:", "date:", 
+            "registration:", "institution:", "university:", "department:", 
+            "degree:", "instructor:", "affiliation:"
+        ]
         first_page_text = " ".join([p.text.lower() for p in doc.paragraphs[:10]])
         
         # Count how many title indicators are present
@@ -201,66 +209,19 @@ class FormattingAnalyzer:
     def _score_margins(self, doc: Document) -> int:
         """Score margin compliance."""
         try:
-            if not doc.sections:
-                return 50  # Default middle score if no sections
-            
-            # Get required margins from style guide
-            required_margins = self.style_guide.get("margins", {})
-            
-            # Get actual margins from first section
-            section = doc.sections[0]
-            actual_margins = {
-                "left": section.left_margin,
-                "right": section.right_margin,
-                "top": section.top_margin,
-                "bottom": section.bottom_margin
-            }
-            
-            # Calculate margin compliance (allow small deviations)
-            compliant_margins = 0
-            for margin_type, required in required_margins.items():
-                if margin_type in actual_margins:
-                    # Allow 0.1 inch deviation
-                    if abs(actual_margins[margin_type].inches - required.inches) <= 0.1:
-                        compliant_margins += 1
-            
-            # Calculate score (percentage of compliant margins)
-            margin_types = ["left", "right", "top", "bottom"]
-            score = (compliant_margins / len(margin_types)) * 100
-            
-            return int(score)
+            result = validate_margins(doc, self.style_guide)
+            if result["compliant"]:
+                return 100
+            # Score based on number of issues (simple heuristic)
+            return max(0, 100 - (len(result["details"]) * 25))
         except:
             return 50  # Default middle score if error
     
     def _score_spacing(self, doc: Document) -> int:
         """Score line spacing compliance."""
         try:
-            # Most academic styles require double spacing
-            required_spacing = WD_LINE_SPACING.DOUBLE
-            
-            # Check paragraphs for proper spacing
-            if not doc.paragraphs:
-                return 50  # Default middle score if no paragraphs
-            
-            # Count paragraphs with correct spacing
-            correct_spacing = 0
-            total_checked = 0
-            
-            for p in doc.paragraphs:
-                if p.text.strip():  # Only check non-empty paragraphs
-                    total_checked += 1
-                    try:
-                        if p.paragraph_format.line_spacing_rule == required_spacing:
-                            correct_spacing += 1
-                    except:
-                        pass  # Skip if cannot determine spacing
-            
-            if total_checked == 0:
-                return 50  # Default middle score if no valid paragraphs
-            
-            # Calculate score
-            score = (correct_spacing / total_checked) * 100
-            return int(score)
+            result = validate_spacing(doc, self.style_guide)
+            return 100 if result["compliant"] else 50
         except:
             return 50  # Default middle score if error
     
@@ -327,31 +288,8 @@ class FormattingAnalyzer:
     def _score_fonts(self, doc: Document) -> int:
         """Score font compliance."""
         try:
-            # Get required font from style guide
-            required_font = self.style_guide.get("meta", {}).get("default_font", "Times New Roman")
-            
-            # Check paragraphs for proper font
-            if not doc.paragraphs:
-                return 50  # Default middle score if no paragraphs
-            
-            # Count paragraphs with correct font
-            correct_font = 0
-            total_checked = 0
-            
-            for p in doc.paragraphs:
-                if p.text.strip():  # Only check non-empty paragraphs
-                    total_checked += 1
-                    
-                    # Check if any run in paragraph has correct font
-                    if any(run.font.name == required_font for run in p.runs if run.font.name):
-                        correct_font += 1
-            
-            if total_checked == 0:
-                return 50  # Default middle score if no valid paragraphs
-            
-            # Calculate score
-            score = (correct_font / total_checked) * 100
-            return int(score)
+            result = validate_fonts(doc, self.style_guide)
+            return 100 if result["compliant"] else 60
         except:
             return 50  # Default middle score if error
     
