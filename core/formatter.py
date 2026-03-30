@@ -1463,10 +1463,6 @@ class AdvancedFormatter:
             para_config = style_config["paragraph"]
             para_format = paragraph.paragraph_format
             
-            # Special handling for lists to prevent unwanted inheritance from 'Normal' (0.5" indent)
-            # if they fell back or are being inconsistently applied.
-            is_list_item = style_name in {"List Bullet", "List Number", "List Item", "List Alphabet"}
-            
             if "alignment" in para_config:
                 alignment = para_config["alignment"]
                 if style_name == "Appendix Title" and has_master_appendices:
@@ -1478,14 +1474,6 @@ class AdvancedFormatter:
                 para_format.right_indent = para_config["right_indent"]
             if "first_line_indent" in para_config:
                 para_format.first_line_indent = para_config["first_line_indent"]
-            
-            # If this is a list item but the style guide doesn't specify indents 
-            # (or we're falling back), ensure we use standard list indent.
-            if is_list_item:
-                if "left_indent" not in para_config:
-                    para_format.left_indent = Inches(0.25)
-                if "first_line_indent" not in para_config:
-                    para_format.first_line_indent = Inches(-0.25)
 
             if "space_before" in para_config:
                 para_format.space_before = para_config["space_before"]
