@@ -37,6 +37,8 @@ tests/
 misc/
 documents/
 formatted/
+Style Manuals/
+tmp/
 
 # WebView data
 **/.webview_data/

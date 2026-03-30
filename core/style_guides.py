@@ -63,6 +63,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -1114,6 +1178,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -2127,6 +2255,13 @@ STYLE_GUIDES = {
         "meta": {
             "title_page": True,
             "page_numbers": "header-right",
+            "page_numbering": {
+                "front_matter_format": "roman",
+                "front_matter_position": "center",
+                "body_format": "arabic",
+                "body_position": "header-right",
+                "title_page_numbered": False
+            },
             "requires_abstract": False,
             "default_font": "Times New Roman",
             "citation_format": "({Author} {Year}, {Page})",
@@ -2144,6 +2279,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -3156,6 +3355,13 @@ STYLE_GUIDES = {
         "meta": {
             "title_page": True,
             "page_numbers": "header-right",
+            "page_numbering": {
+                "front_matter_format": "roman",
+                "front_matter_position": "center",
+                "body_format": "arabic",
+                "body_position": "header-right",
+                "title_page_numbered": False
+            },
             "requires_abstract": False,
             "default_font": "Times New Roman",
             "citation_format": "({Author} {Year}, p. {Page})",
@@ -3173,6 +3379,70 @@ STYLE_GUIDES = {
             "gutter": Inches(0)
         },
         "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
             "Title": {
                 "type": WD_STYLE_TYPE.PARAGRAPH,
                 "font": {
@@ -4169,6 +4439,634 @@ STYLE_GUIDES = {
             },
 
         }
+    },
+    "turabian": {
+        "inline_formatting": [],
+        "reference_formatting": {
+            "patterns": [
+                {
+                    "description": "Italicize journal titles and book titles in bibliography",
+                    "regex": r"\.\s*([A-Z][A-Za-z0-9 &]+?[.?!])(?=\s|$)",
+                    "formatting": {"italic": True}
+                },
+                {
+                    "description": "Format volume numbers in bibliography",
+                    "regex": r"(\d+)\s*\(([^)]+)\)",
+                    "formatting": {"italic": False}
+                }
+            ]
+        },
+        "meta": {
+            "title_page": True,
+            "page_numbers": "header-right",
+            "page_numbering": {
+                "front_matter_format": "roman",  # Lowercase Roman numerals for front matter
+                "front_matter_position": "center",  # Center at bottom for front matter
+                "body_format": "arabic",  # Arabic numbers for body
+                "body_position": "header-right",  # Top-right for body
+                "title_page_numbered": False  # Title page is technically page 1 but not numbered
+            },
+            "requires_abstract": False,
+            "default_font": "Times New Roman",
+            "citation_format": "footnote",  # Turabian uses notes-bibliography format (footnotes)
+            "bibliography_title": "Bibliography",  # Turabian uses "Bibliography" not "References"
+            "page_size": (Inches(8.5), Inches(11)),
+            "orientation": WD_ORIENTATION.PORTRAIT,
+            "default_tab_stops": Inches(0.5)
+        },
+        "margins": {
+            "left": Inches(1),
+            "right": Inches(1),
+            "top": Inches(1),
+            "bottom": Inches(1),
+            "header": Inches(0.5),
+            "footer": Inches(0.5),
+            "gutter": Inches(0)
+        },
+        "styles": {
+            "Copyright": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Certification": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "page_break_before": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "TOC Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "left_indent": Inches(0.5)
+                },
+                "based_on": "Normal",
+                "next_style": "TOC Item"
+            },
+            "Title": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": True,
+                    "all_caps": False,
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(24.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.0),
+                    "left_indent": Inches(0.0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": True,
+                    "widow_control": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Heading 1": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": True,
+                    "italic": False,
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": False,
+                    "outline_level": 0
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Heading 2": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False,
+                    "italic": False,
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": False,
+                    "outline_level": 1
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Heading 3": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": True,
+                    "italic": False,
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": False,
+                    "outline_level": 2
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Heading 4": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False,
+                    "italic": False,
+                    "all_caps": False,  # Sentence case - only first letter capitalized
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": False,
+                    "outline_level": 3
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Heading 5": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False,
+                    "italic": True,
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "first_line_indent": Inches(0.5),
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": False,
+                    "outline_level": 4
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Normal": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False,
+                    "italic": False,
+                    "color": RGBColor(0, 0, 0),
+                    "underline": WD_UNDERLINE.NONE
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "left_indent": Inches(0.0),
+                    "right_indent": Inches(0.0),
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0.5),
+                    "keep_together": False,
+                    "widow_control": True,
+                    "orphan_control": True,
+                    "page_break_before": False
+                },
+                "base_style": None,
+                "next_style": "Normal"
+            },
+            "Block Quote": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False,
+                    "italic": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "left_indent": Inches(0.5),
+                    "right_indent": Inches(0.0),
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(12.0),
+                    "line_spacing": WD_LINE_SPACING.SINGLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "page_break_before": False
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Footnote Text": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(10),
+                    "bold": False,
+                    "italic": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "first_line_indent": Inches(0),
+                    "line_spacing": WD_LINE_SPACING.SINGLE,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(0.0),
+                    "page_break_before": False,
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "widow_control": True,
+                    "left_indent": Inches(0),
+                    "right_indent": Inches(0)
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Bibliography Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(12.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": True,
+                    "outline_level": 0
+                },
+                "based_on": "Normal",
+                "next_style": "Bibliography"
+            },
+            "Bibliography": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": False,
+                    "italic": False
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(12.0),
+                    "line_spacing": WD_LINE_SPACING.SINGLE,
+                    "left_indent": Inches(0.5),
+                    "first_line_indent": Inches(-0.5),
+                    "keep_together": True,
+                    "widow_control": True,
+                    "orphan_control": True
+                },
+                "based_on": "Normal",
+                "next_style": "Bibliography"
+            },
+            "References Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12),
+                    "bold": True
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(12.0),
+                    "line_spacing": WD_LINE_SPACING.DOUBLE,
+                    "first_line_indent": Inches(0),
+                    "keep_together": True,
+                    "keep_with_next": True,
+                    "page_break_before": True,
+                    "outline_level": 0
+                },
+                "based_on": "Normal",
+                "next_style": "References"
+            },
+            "References": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.LEFT,
+                    "space_before": Pt(0.0),
+                    "space_after": Pt(12.0),
+                    "line_spacing": WD_LINE_SPACING.SINGLE,
+                    "left_indent": Inches(0.5),
+                    "first_line_indent": Inches(-0.5),
+                    "keep_together": True
+                },
+                "based_on": "Normal",
+                "next_style": "References"
+            },
+            "Table Title": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(12.0),
+                    "space_after": Pt(6.0),
+                    "line_spacing": WD_LINE_SPACING.SINGLE,
+                    "keep_together": True,
+                    "keep_with_next": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Figure Caption": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {
+                    "name": "Times New Roman",
+                    "size": Pt(12)
+                },
+                "paragraph": {
+                    "alignment": WD_ALIGN_PARAGRAPH.CENTER,
+                    "space_before": Pt(6.0),
+                    "space_after": Pt(12.0),
+                    "line_spacing": WD_LINE_SPACING.SINGLE,
+                    "keep_together": True
+                },
+                "based_on": "Normal",
+                "next_style": "Normal"
+            },
+            "Title Byline": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal", "next_style": "Normal"
+            },
+            "Title Author": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal", "next_style": "Normal"
+            },
+            "Title Department": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Title Degree": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Title Affiliation": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Title Course": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Title Instructor": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Title Registration Number": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Title Date": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Abstract Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "line_spacing": WD_LINE_SPACING.DOUBLE, "page_break_before": True},
+                "based_on": "Normal", "next_style": "Abstract"
+            },
+            "Abstract": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "first_line_indent": Inches(0), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Acknowledgement Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(12.0), "line_spacing": WD_LINE_SPACING.DOUBLE, "page_break_before": True},
+                "based_on": "Normal", "next_style": "Acknowledgement Body"
+            },
+            "Acknowledgement Body": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Dedication Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(12.0), "line_spacing": WD_LINE_SPACING.DOUBLE, "page_break_before": True},
+                "based_on": "Normal"
+            },
+            "Dedication Body": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False, "italic": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(200.0), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Preface Heading": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(12.0), "line_spacing": WD_LINE_SPACING.DOUBLE, "page_break_before": True},
+                "based_on": "Normal"
+            },
+            "Preface Body": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": False},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Epigraph": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "left_indent": Inches(2.0), "right_indent": Inches(0.5), "line_spacing": WD_LINE_SPACING.SINGLE},
+                "based_on": "Normal"
+            },
+            "Keywords": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Appendix Title": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(24.0), "line_spacing": WD_LINE_SPACING.DOUBLE, "page_break_before": True},
+                "based_on": "Normal"
+            },
+            "Appendices Title": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(24.0), "line_spacing": WD_LINE_SPACING.DOUBLE, "page_break_before": True},
+                "based_on": "Normal"
+            },
+            "List Bullet": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "left_indent": Inches(0.25), "first_line_indent": Inches(-0.25), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "List Number": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "left_indent": Inches(0.25), "first_line_indent": Inches(-0.25), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "List Alphabet": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "left_indent": Inches(0.25), "first_line_indent": Inches(-0.25), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "List Item": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "left_indent": Inches(0.25), "first_line_indent": Inches(-0.25), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Table Note": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "space_before": Pt(6.0), "space_after": Pt(12.0), "line_spacing": WD_LINE_SPACING.SINGLE},
+                "based_on": "Normal"
+            },
+            "Table Body": {
+                 "type": WD_STYLE_TYPE.PARAGRAPH,
+                 "font": {"name": "Times New Roman", "size": Pt(12)},
+                 "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "line_spacing": WD_LINE_SPACING.SINGLE},
+                 "based_on": "Normal"
+            },
+            "Table": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(12.0), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Figure": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12), "bold": True},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.CENTER, "space_before": Pt(12.0), "line_spacing": WD_LINE_SPACING.DOUBLE},
+                "based_on": "Normal"
+            },
+            "Table Content": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Times New Roman", "size": Pt(12)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "line_spacing": WD_LINE_SPACING.SINGLE},
+                "based_on": "Normal"
+            },
+            "Code Block": {
+                "type": WD_STYLE_TYPE.PARAGRAPH,
+                "font": {"name": "Courier New", "size": Pt(10)},
+                "paragraph": {"alignment": WD_ALIGN_PARAGRAPH.LEFT, "left_indent": Inches(0.5), "space_before": Pt(12.0), "space_after": Pt(12.0), "line_spacing": WD_LINE_SPACING.SINGLE},
+                "based_on": "Normal"
+            }
+        }
     }
-
 }

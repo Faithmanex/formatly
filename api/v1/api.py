@@ -358,20 +358,25 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
         # 6. Track Changes if requested
         tracked_changes_url = None
         if options.get("trackedChanges"):
-            await update_document_status(job_id, "processing", 95, {"message": "Generating tracked changes..."})
-            tracker = TrackChanges(str(local_input_path), str(local_output_path))
-            tracked_path = await loop.run_in_executor(None, tracker.compare_docs)
+            try:
+                await update_document_status(job_id, "processing", 95, {"message": "Generating tracked changes..."})
+                tracker = TrackChanges(str(local_input_path), str(local_output_path))
+                tracked_path = await loop.run_in_executor(None, tracker.compare_docs)
 
-            if tracked_path and os.path.exists(tracked_path):
-                tracked_filename = f"{user_id}/tracked/{job_id}_tracked.docx"
-                with open(tracked_path, "rb") as f:
-                    supabase.storage.from_("documents").upload(
-                        tracked_filename,
-                        f,
-                        {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
-                    )
-                tracked_changes_url = tracked_filename
-                logger.info(f"Tracked changes uploaded: {tracked_filename}")
+                if tracked_path and os.path.exists(tracked_path):
+                    tracked_filename = f"{user_id}/tracked/{job_id}_tracked.docx"
+                    with open(tracked_path, "rb") as f:
+                        supabase.storage.from_("documents").upload(
+                            tracked_filename,
+                            f,
+                            {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+                        )
+                    tracked_changes_url = tracked_filename
+                    logger.info(f"Tracked changes uploaded: {tracked_filename}")
+            except Exception as e:
+                logger.error(f"Track changes failed for job {job_id}, but continuing: {e}")
+                # We don't re-raise here, so the user still gets the formatted document
+                # We can add a note to the processing log later
 
         # 7. Finalize Status
         processing_log = {
@@ -380,6 +385,9 @@ async def process_document_task(job_id: str, file_path: str, style: str, english
             "backend": backend,
             "message": "Formatting successful"
         }
+        
+        if options.get("trackedChanges") and not tracked_changes_url:
+            processing_log["warning"] = "Tracked changes generation failed, but formatted document is ready."
 
         await update_document_status(
             job_id, "formatted", 100, processing_log,
