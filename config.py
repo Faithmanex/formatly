@@ -49,7 +49,7 @@ MODEL_QUOTAS = {
         "rpd": 10000,
         "max_tokens": 120000
     },
-    "gemini-3.1-flash-lite": {
+    "gemini-3.1-flash-lite-preview": {
         "rpm": 4000,
         "tpm": 4000000,
         "rpd": 150000,
