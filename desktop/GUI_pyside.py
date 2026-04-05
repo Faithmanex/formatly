@@ -15,6 +15,7 @@ Architecture Note:
 import sys
 import os
 import json
+import signal
 import threading
 import time
 from pathlib import Path
@@ -430,6 +431,15 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+
+    signal.signal(signal.SIGINT, lambda *_: app.quit())
+
+    # QTimer lets Python's signal handler run periodically
+    from PySide6.QtCore import QTimer
+    timer = QTimer()
+    timer.start(200)
+    timer.timeout.connect(lambda: None)
+
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

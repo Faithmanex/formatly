@@ -46,3 +46,6 @@ tmp/
 # IDE
 .vscode/
 .idea/
+officecli-win-x64.exe.update
+.gitignore
+officecli-win-x64.exe
